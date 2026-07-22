@@ -141,7 +141,161 @@ body { font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', 'Helvetica 
 .empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--text-disabled); }
 .empty-state .es-icon { font-size:48px; margin-bottom:12px; }
 .empty-state .es-text { font-size:12px; }
-</style>
+
+/* ========== Tool Views ========== */
+.tool-views { position:absolute; top:48px; left:220px; right:0; bottom:0; background:#fff; z-index:100; display:flex; flex-direction:column; }
+.tv-header { height:44px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 16px; flex-shrink:0; background:#fff; }
+.tv-header-left { display:flex; align-items:center; gap:10px; }
+.tv-back { font-size:11px; color:var(--primary); cursor:pointer; padding:4px 8px; border-radius:4px; }
+.tv-back:hover { background:var(--primary-light); }
+.tv-title { font-size:14px; font-weight:600; color:var(--text); }
+.tv-header-actions { display:flex; gap:6px; }
+.tv-close { font-size:16px; color:var(--text-tertiary); cursor:pointer; padding:4px 6px; border-radius:4px; }
+.tv-close:hover { background:var(--bg); color:var(--text); }
+.tv-body { flex:1; overflow:hidden; }
+.tv-pane { height:100%; overflow-y:auto; display:none; padding:16px 20px; }
+.tv-btn { font-size:11px; padding:6px 14px; border-radius:6px; cursor:pointer; border:none; font-family:inherit; transition:all 0.1s; white-space:nowrap; }
+.tv-btn.primary { background:var(--primary); color:#fff; }
+.tv-btn.primary:hover { background:#0958d9; }
+.tv-btn.default { background:#fff; border:1px solid #d9d9d9; color:var(--text-secondary); }
+.tv-btn.default:hover { border-color:var(--primary); color:var(--primary); }
+.tv-btn.danger { background:var(--danger); color:#fff; }
+.tv-btn.danger:hover { background:#cf1322; }
+.tv-btn.sm { padding:4px 10px; font-size:10px; }
+
+/* ========== Capability Center ========== */
+.cap-layout { display:flex; gap:16px; height:100%; }
+.cap-sidebar { width:180px; flex-shrink:0; border-right:1px solid var(--border); padding-right:12px; }
+.cap-main { flex:1; min-width:0; }
+.cap-search-wrap { position:relative; margin-bottom:10px; }
+.cap-search-icon { position:absolute; left:8px; top:7px; font-size:11px; }
+.cap-search { width:100%; padding:6px 8px 6px 24px; border:1px solid #d9d9d9; border-radius:6px; font-size:11px; outline:none; font-family:inherit; box-sizing:border-box; }
+.cap-search:focus { border-color:var(--primary); }
+.cap-cat-item { font-size:11px; padding:6px 8px; border-radius:4px; cursor:pointer; color:var(--text-secondary); margin-bottom:2px; display:flex; align-items:center; gap:4px; }
+.cap-cat-item:hover { background:var(--bg); }
+.cap-cat-item.active { background:var(--primary-light); color:var(--primary); font-weight:600; }
+.cap-cat-item .cc-count { font-size:9px; color:var(--text-disabled); margin-left:auto; }
+.cap-new-cat { font-size:10px; color:var(--primary); cursor:pointer; padding:6px 8px; margin-top:4px; }
+.cap-new-cat:hover { background:var(--primary-light); border-radius:4px; }
+.cap-toolbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.cap-count { font-size:11px; color:var(--text-tertiary); }
+.cap-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:10px; }
+.cap-card { background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:12px; cursor:default; transition:all 0.15s; }
+.cap-card:hover { box-shadow:0 2px 8px rgba(0,0,0,0.06); border-color:#d6e4ff; }
+.cap-card-header { display:flex; align-items:center; gap:6px; margin-bottom:6px; }
+.cap-card-icon { font-size:16px; }
+.cap-card-name { font-size:12px; font-weight:600; }
+.cap-card-type { font-size:9px; padding:1px 6px; border-radius:3px; background:#f0f5ff; color:var(--primary); margin-left:auto; }
+.cap-card-desc { font-size:10px; color:var(--text-tertiary); line-height:1.5; margin-bottom:8px; }
+.cap-card-meta { display:flex; gap:10px; font-size:9px; color:var(--text-disabled); margin-bottom:6px; }
+.cap-card-actions { display:flex; gap:6px; justify-content:flex-end; border-top:1px solid var(--border); padding-top:6px; }
+.cap-card-action { font-size:9px; padding:3px 8px; border-radius:3px; cursor:pointer; color:var(--text-tertiary); }
+.cap-card-action:hover { background:var(--bg); color:var(--text); }
+.cap-card-action.danger:hover { color:var(--danger); background:#fff1f0; }
+.cap-card .cap-bound { font-size:9px; color:var(--primary); background:var(--primary-light); padding:2px 6px; border-radius:3px; display:inline-block; }
+.cap-empty { font-size:12px; color:var(--text-disabled); text-align:center; padding:40px; }
+
+/* ========== Knowledge Base ========== */
+.kb-layout { max-width:900px; margin:0 auto; }
+.kb-upload-zone { border:2px dashed #d9d9d9; border-radius:10px; padding:20px; text-align:center; cursor:pointer; margin-bottom:14px; transition:all 0.15s; }
+.kb-upload-zone:hover { border-color:var(--primary); background:var(--primary-light); }
+.kb-uz-icon { font-size:28px; display:block; margin-bottom:6px; }
+.kb-uz-text { font-size:12px; color:var(--text-secondary); }
+.kb-uz-hint { font-size:10px; color:var(--text-disabled); margin-top:4px; }
+.kb-search-wrap { position:relative; margin-bottom:12px; max-width:400px; }
+.kb-search-icon { position:absolute; left:8px; top:7px; font-size:11px; }
+.kb-search { width:100%; padding:6px 8px 6px 24px; border:1px solid #d9d9d9; border-radius:6px; font-size:11px; outline:none; font-family:inherit; box-sizing:border-box; }
+.kb-search:focus { border-color:var(--primary); }
+.kb-overview { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:10px; margin-bottom:14px; }
+.kb-ov-card { background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:12px; cursor:pointer; transition:all 0.15s; }
+.kb-ov-card:hover { box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+.kb-ov-card.active { border-color:var(--primary); background:var(--primary-light); }
+.kb-ov-top { display:flex; align-items:center; gap:6px; margin-bottom:4px; }
+.kb-ov-name { font-size:12px; font-weight:600; }
+.kb-ov-stats { font-size:10px; color:var(--text-tertiary); }
+.kb-ov-progress { display:flex; align-items:center; gap:6px; margin-top:6px; }
+.kb-ov-bar { flex:1; height:4px; background:#f0f0f0; border-radius:2px; overflow:hidden; }
+.kb-ov-bar-fill { height:100%; border-radius:2px; transition:width 0.3s; }
+.kb-ov-pct { font-size:9px; color:var(--text-tertiary); }
+.kb-ov-agents { font-size:9px; color:var(--text-disabled); margin-top:4px; }
+.kb-agent-tag { display:inline-block; font-size:8px; padding:1px 5px; border-radius:3px; background:var(--primary-light); color:var(--primary); margin-right:2px; }
+.kb-section-title { font-size:12px; font-weight:600; margin:12px 0 8px; display:flex; align-items:center; gap:6px; }
+.kb-file-item { display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:6px; border:1px solid var(--border); margin-bottom:4px; }
+.kb-file-item:hover { background:var(--bg); }
+.kb-fi-icon { font-size:14px; }
+.kb-fi-body { flex:1; min-width:0; cursor:pointer; }
+.kb-fi-name { font-size:11px; font-weight:500; color:var(--text); }
+.kb-fi-meta { font-size:9px; color:var(--text-tertiary); }
+.kb-fi-status { font-size:9px; padding:1px 6px; border-radius:3px; }
+.kb-fi-time { font-size:9px; color:var(--text-disabled); }
+.kb-fi-actions { display:flex; gap:4px; }
+.kb-fi-action { font-size:9px; padding:2px 6px; border-radius:3px; cursor:pointer; color:var(--text-tertiary); }
+.kb-fi-action:hover { background:var(--bg); }
+.kb-fi-action.danger:hover { color:var(--danger); background:#fff1f0; }
+.kb-fi-ref { font-size:9px; color:var(--text-disabled); margin-top:2px; }
+.kb-empty { font-size:12px; color:var(--text-disabled); text-align:center; padding:30px; }
+.kb-upload-progress { margin:8px 0; padding:8px 12px; background:#f6ffed; border:1px solid #b7eb8f; border-radius:6px; font-size:11px; color:#389e0d; display:flex; align-items:center; gap:6px; }
+.kb-upload-progress.parsing { background:#fff7e6; border-color:#ffd591; color:#d46b08; }
+.kb-upload-progress.error { background:#fff1f0; border-color:#ffa39e; color:#cf1322; }
+
+/* ========== Agent Management ========== */
+.ag-layout { max-width:900px; margin:0 auto; }
+.ag-section-label { font-size:11px; font-weight:600; color:var(--text-tertiary); margin-bottom:8px; text-transform:uppercase; letter-spacing:1px; }
+.ag-preset-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:8px; margin-bottom:16px; }
+.ag-preset-card { background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:10px; text-align:center; cursor:pointer; transition:all 0.15s; }
+.ag-preset-card:hover { box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+.ag-preset-icon { font-size:24px; display:block; margin-bottom:4px; }
+.ag-preset-name { font-size:11px; font-weight:600; }
+.ag-preset-role { font-size:9px; color:var(--text-tertiary); margin:2px 0; }
+.ag-preset-badge { font-size:9px; padding:1px 6px; border-radius:3px; display:inline-block; margin-top:4px; }
+.ag-preset-footer { font-size:9px; color:var(--text-disabled); display:flex; justify-content:center; gap:8px; margin-top:6px; padding-top:6px; border-top:1px solid var(--border); }
+.ag-divider { text-align:center; margin:16px 0; position:relative; }
+.ag-divider::before { content:''; position:absolute; left:0; right:0; top:50%; height:1px; background:var(--border); }
+.ag-divider span { background:#fff; padding:0 12px; font-size:10px; color:var(--text-tertiary); position:relative; }
+.ag-toolbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.ag-count { font-size:11px; color:var(--text-tertiary); }
+.ag-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:10px; }
+.ag-card { background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:12px; transition:all 0.15s; }
+.ag-card:hover { box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+.ag-card-header { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.ag-card-icon { font-size:20px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:50%; background:#f0f5ff; }
+.ag-card-info { flex:1; }
+.ag-card-name { font-size:12px; font-weight:600; }
+.ag-card-meta-line { font-size:9px; color:var(--text-tertiary); display:flex; gap:6px; }
+.ag-card-status { font-size:9px; padding:2px 8px; border-radius:10px; }
+.ag-card-body { font-size:10px; color:var(--text-tertiary); line-height:1.5; margin-bottom:8px; }
+.ag-card-binds { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:8px; }
+.ag-card-bind-tag { font-size:9px; padding:2px 6px; border-radius:3px; background:#f5f5f5; color:var(--text-secondary); }
+.ag-card-stats { display:flex; gap:12px; font-size:9px; color:var(--text-disabled); margin-bottom:8px; padding-top:6px; border-top:1px solid var(--border); }
+.ag-card-actions { display:flex; gap:6px; justify-content:flex-end; }
+.ag-card-action { font-size:9px; padding:4px 10px; border-radius:4px; cursor:pointer; border:1px solid #d9d9d9; background:#fff; color:var(--text-secondary); font-family:inherit; }
+.ag-card-action:hover { border-color:var(--primary); color:var(--primary); }
+.ag-card-action.primary { background:var(--primary); color:#fff; border-color:var(--primary); }
+.ag-card-action.primary:hover { background:#0958d9; }
+.ag-card-action.danger { color:var(--danger); border-color:var(--danger); }
+.ag-card-action.danger:hover { background:var(--danger); color:#fff; }
+.ag-empty { font-size:12px; color:var(--text-disabled); text-align:center; padding:40px; }
+
+/* ========== Modal Overlay ========== */
+.tv-modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.3); z-index:200; display:flex; align-items:center; justify-content:center; }
+.tv-modal { background:#fff; border-radius:12px; width:560px; max-width:90vw; max-height:85vh; overflow:hidden; box-shadow:0 8px 30px rgba(0,0,0,0.12); display:flex; flex-direction:column; }
+.tv-modal-header { display:flex; justify-content:space-between; align-items:center; padding:14px 20px; border-bottom:1px solid var(--border); flex-shrink:0; }
+.tv-modal-title { font-size:14px; font-weight:600; }
+.tv-modal-close { background:none; border:none; font-size:18px; cursor:pointer; color:var(--text-tertiary); padding:4px; }
+.tv-modal-body { padding:16px 20px; overflow-y:auto; flex:1; }
+.tv-modal-footer { display:flex; gap:8px; justify-content:flex-end; padding:12px 20px; border-top:1px solid var(--border); flex-shrink:0; }
+.tv-modal label { font-size:11px; font-weight:500; color:var(--text-secondary); display:block; margin-bottom:4px; margin-top:10px; }
+.tv-modal label:first-child { margin-top:0; }
+.tv-modal input[type=text], .tv-modal input[type=number], .tv-modal textarea, .tv-modal select { width:100%; padding:7px 10px; border:1px solid #d9d9d9; border-radius:6px; font-size:11px; outline:none; font-family:inherit; box-sizing:border-box; }
+.tv-modal input:focus, .tv-modal textarea:focus, .tv-modal select:focus { border-color:var(--primary); }
+.tv-modal textarea { min-height:60px; resize:vertical; }
+.tv-modal .form-row { display:flex; gap:10px; }
+.tv-modal .form-row > * { flex:1; }
+.tv-modal .tag-select { display:flex; flex-wrap:wrap; gap:4px; }
+.tv-modal .tag-opt { font-size:10px; padding:3px 10px; border-radius:4px; border:1px solid #d9d9d9; cursor:pointer; background:#fff; color:var(--text-secondary); }
+.tv-modal .tag-opt.selected { background:var(--primary-light); border-color:var(--primary); color:var(--primary); }
+.tv-modal .form-hint { font-size:9px; color:var(--text-disabled); margin-top:2px; }
+
 </head>
 <body>
 <div class="app">
@@ -160,10 +314,10 @@ body { font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', 'Helvetica 
         <div id="agentList"></div>
         <div class="sidebar-divider"></div>
         <div class="sidebar-title" style="margin-top:0;">🛠 工具</div>
-        <div class="sf-item" onclick="alert('🔧 能力中心')">🔧 能力中心</div>
-        <div class="sf-item" onclick="alert('📚 知识库')">📚 知识库</div>
-        <div class="sf-item" onclick="alert('🤖 管理智能体页面')">🤖 管理智能体</div>
-        <div class="sf-item highlight" onclick="alert('创建智能体页面')">+ 创建智能体</div>
+        <div class="sf-item" onclick="switchTool('capabilities')">🔧 能力中心</div>
+        <div class="sf-item" onclick="switchTool('knowledge')">📚 知识库</div>
+        <div class="sf-item" onclick="switchTool('agents')">🤖 管理智能体</div>
+        <div class="sf-item highlight" onclick="switchTool('agents');setTimeout(function(){showAgentCreateForm()},100)">+ 创建智能体</div>
       </div>
     </div>
 
@@ -180,6 +334,67 @@ body { font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', 'Helvetica 
       <div class="input-area">
         <input id="chatInput" placeholder="问AI：今天有什么紧急的？" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}">
         <button class="send-btn" id="sendBtn" onclick="sendMessage()">发送</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== Tool Views (overlay the chat area) ========== -->
+  <div class="tool-views" id="toolViews" style="display:none;">
+    <div class="tv-header">
+      <div class="tv-header-left">
+        <span class="tv-back" onclick="closeToolView()">← 返回对话</span>
+        <span class="tv-title" id="tvTitle">🔧 能力中心</span>
+      </div>
+      <div class="tv-header-actions">
+        <span class="tv-close" onclick="closeToolView()">✕</span>
+      </div>
+    </div>
+    <div class="tv-body">
+      <!-- Capability Center -->
+      <div class="tv-pane" id="tv-capabilities">
+        <div class="cap-layout">
+          <div class="cap-sidebar">
+            <div class="cap-search-wrap"><span class="cap-search-icon">🔍</span><input class="cap-search" id="capSearch" placeholder="搜索能力..." oninput="filterCapabilities(this.value)"></div>
+            <div class="cap-cat-list" id="capCatList"></div>
+            <div class="cap-new-cat" onclick="showNewCapCategoryModal()">+ 新建分类</div>
+          </div>
+          <div class="cap-main">
+            <div class="cap-toolbar">
+              <span class="cap-count" id="capCount"></span>
+              <span class="tv-btn primary" onclick="showCapForm(null)">+ 新建能力</span>
+            </div>
+            <div class="cap-grid" id="capGrid"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Knowledge Base -->
+      <div class="tv-pane" id="tv-knowledge">
+        <div class="kb-layout">
+          <div class="kb-upload-zone" id="kbUploadZone" onclick="document.getElementById('kbFileInput').click()">
+            <span class="kb-uz-icon">📂</span>
+            <div class="kb-uz-text">拖拽文件到此处，或点击上传</div>
+            <div class="kb-uz-hint">支持 PDF / Word / Excel / TXT / CSV</div>
+            <input type="file" id="kbFileInput" style="display:none" accept=".pdf,.docx,.xlsx,.txt,.csv" multiple onchange="handleKBUpload(this)">
+          </div>
+          <div class="kb-search-wrap"><span class="kb-search-icon">🔍</span><input class="kb-search" id="kbSearch" placeholder="搜索文件名..." oninput="filterKBFiles(this.value)"></div>
+          <div class="kb-overview" id="kbOverview"></div>
+          <div class="kb-file-list" id="kbFileList"></div>
+        </div>
+      </div>
+
+      <!-- Agent Management -->
+      <div class="tv-pane" id="tv-agents">
+        <div class="ag-layout">
+          <div class="ag-section-label">🤖 预设智能体</div>
+          <div class="ag-preset-grid" id="agPresetGrid"></div>
+          <div class="ag-divider"><span>自定义智能体</span></div>
+          <div class="ag-toolbar">
+            <span class="ag-count" id="agCount"></span>
+            <span class="tv-btn primary" onclick="showAgentCreateForm()">+ 创建智能体</span>
+          </div>
+          <div class="ag-grid" id="agGrid"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -581,6 +796,577 @@ function getTime() {
 
 // Init on load
 document.addEventListener('DOMContentLoaded', init);
-</script>
+
+// ========================================
+// Tool Views
+// ========================================
+var currentTool = null;
+
+function switchTool(tool) {
+    currentTool = tool;
+    var titles = { capabilities:'🔧 能力中心', knowledge:'📚 知识库', agents:'🤖 智能体管理' };
+    document.getElementById('tvTitle').textContent = titles[tool] || '工具';
+    document.getElementById('toolViews').style.display = 'flex';
+    document.querySelectorAll('.tv-pane').forEach(function(p) { p.style.display = 'none'; });
+    document.getElementById('tv-' + tool).style.display = 'block';
+    
+    // Load data
+    if (tool === 'capabilities') { loadCapabilities(); loadCapCategories(); }
+    if (tool === 'knowledge') { loadKBData(); }
+    if (tool === 'agents') { loadManagedAgents(); renderPresetAgents(); }
+}
+
+function closeToolView() {
+    document.getElementById('toolViews').style.display = 'none';
+    currentTool = null;
+}
+
+// ========================================
+// Capability Center
+// ========================================
+var capFilterCat = '全部能力';
+var capFilterSearch = '';
+
+function loadCapCategories() {
+    fetch('/api/cap-categories').then(function(r) { return r.json(); }).then(function(cats) {
+        var html = '';
+        cats.forEach(function(c) {
+            html += '<div class="cap-cat-item' + (c.name === capFilterCat ? ' active' : '') + '" onclick="capFilterCat=\'' + c.name + '\';loadCapCategories();loadCapabilities();">' +
+                c.icon + ' ' + c.name + '</div>';
+        });
+        document.getElementById('capCatList').innerHTML = html;
+    });
+}
+
+function loadCapabilities() {
+    fetch('/api/capabilities').then(function(r) { return r.json(); }).then(function(data) {
+        var filtered = data.filter(function(c) {
+            if (capFilterCat !== '全部能力' && c.category !== capFilterCat) return false;
+            if (capFilterSearch && c.name.indexOf(capFilterSearch) < 0 && c.description.indexOf(capFilterSearch) < 0) return false;
+            return true;
+        });
+        document.getElementById('capCount').textContent = filtered.length + ' 项能力';
+        if (filtered.length === 0) {
+            document.getElementById('capGrid').innerHTML = '<div class="cap-empty">🔧 暂无匹配的能力</div>';
+            return;
+        }
+        var html = '';
+        filtered.forEach(function(c) {
+            var typeLabels = { auto:'⚡自动执行', ai_assisted:'🧠AI辅助', manual:'👤人工确认', connection:'🔗连接' };
+            var typeLabel = typeLabels[c.type] || c.type;
+            var boundHtml = c.boundAgents && c.boundAgents.length > 0 ? '<span class="cap-bound">🤖 被' + c.boundAgents.length + '个智能体使用</span>' : '';
+            html += '<div class="cap-card">' +
+                '<div class="cap-card-header">' +
+                    '<span class="cap-card-icon">' + c.icon + '</span>' +
+                    '<span class="cap-card-name">' + c.name + '</span>' +
+                    '<span class="cap-card-type">' + typeLabel + '</span>' +
+                '</div>' +
+                '<div class="cap-card-desc">' + c.description + '</div>' +
+                '<div class="cap-card-meta">' +
+                    '<span>📂 ' + (c.category || '未分类') + '</span>' +
+                    '<span>🔄 ' + (c.trigger === 'scheduled' ? '定时' : '手动') + '</span>' +
+                    boundHtml +
+                '</div>' +
+                '<div class="cap-card-actions">' +
+                    '<span class="cap-card-action" onclick="showCapForm(\'' + c.id + '\')">📝 编辑</span>' +
+                    '<span class="cap-card-action ' + (c.status === 'enabled' ? '' : '') + '" onclick="toggleCapStatus(\'' + c.id + '\')">' + (c.status === 'enabled' ? '⏸ 禁用' : '▶ 启用') + '</span>' +
+                    '<span class="cap-card-action danger" onclick="deleteCapability(\'' + c.id + '\')">🗑 删除</span>' +
+                '</div>' +
+            '</div>';
+        });
+        document.getElementById('capGrid').innerHTML = html;
+    });
+}
+
+function filterCapabilities(val) {
+    capFilterSearch = val;
+    loadCapabilities();
+}
+
+function showCapForm(capId) {
+    var isEdit = !!capId;
+    var cap = null;
+    if (isEdit) {
+        // Need to fetch fresh data
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', '/api/capabilities', false);
+        xhr.send();
+        var all = JSON.parse(xhr.responseText);
+        cap = all.find(function(c) { return c.id === capId; });
+    }
+    var title = isEdit ? '编辑能力' : '新建能力';
+    var n = cap || { name:'', category:'发票类', icon:'🔧', type:'ai_assisted', description:'', trigger:'manual', outputFormat:'text', steps:[] };
+    
+    fetch('/api/cap-categories').then(function(r) { return r.json(); }).then(function(cats) {
+        var catOpts = cats.filter(function(c) { return !c.builtin; }).map(function(c) {
+            return '<option' + (c.name === n.category ? ' selected' : '') + '>' + c.name + '</option>';
+        }).join('');
+        
+        var typeOpts = ['auto','ai_assisted','manual','connection'].map(function(t) {
+            var labels = { auto:'⚡自动执行', ai_assisted:'🧠AI辅助', manual:'👤人工确认', connection:'🔗连接' };
+            return '<option value="' + t + '"' + (t === n.type ? ' selected' : '') + '>' + labels[t] + '</option>';
+        }).join('');
+        
+        var triggerOpts = ['manual','scheduled','event'].map(function(t) {
+            var labels = { manual:'手动', scheduled:'定时', event:'事件触发' };
+            return '<option value="' + t + '"' + (t === n.trigger ? ' selected' : '') + '>' + labels[t] + '</option>';
+        }).join('');
+        
+        var stepsHtml = '';
+        if (n.steps) {
+            n.steps.forEach(function(s, i) {
+                stepsHtml += '<div class="form-row" style="margin-bottom:4px;"><input type="text" class="step-name" value="' + (s.name||'') + '" placeholder="步骤名称"><input type="text" class="step-skill" value="' + (s.skill||'') + '" placeholder="选择Skill..." style="flex:2;"><span class="tv-btn sm default" onclick="this.parentElement.remove()">✕</span></div>';
+            });
+        }
+        
+        var body = '<label>能力名称</label><input type="text" id="capFormName" value="' + n.name + '" placeholder="如：发票合规检查">' +
+            '<div class="form-row">' +
+                '<div><label>分类</label><select id="capFormCat">' + catOpts + '</select></div>' +
+                '<div><label>执行类型</label><select id="capFormType">' + typeOpts + '</select></div>' +
+            '</div>' +
+            '<label>能力描述</label><textarea id="capFormDesc" placeholder="能力概述...">' + n.description + '</textarea>' +
+            '<label>执行步骤</label><div id="capFormSteps">' + (stepsHtml || '<div class="form-hint">暂无步骤，点击下方添加</div>') + '</div>' +
+            '<span class="tv-btn sm default" onclick="addCapStep()" style="margin:4px 0 8px;">+ 添加步骤</span>' +
+            '<div class="form-row">' +
+                '<div><label>触发方式</label><select id="capFormTrigger">' + triggerOpts + '</select></div>' +
+                '<div><label>输出格式</label><select id="capFormOutput"><option>文本</option><option selected>JSON</option><option>表格</option></select></div>' +
+            '</div>';
+        
+        showModal(title, body, function() {
+            var payload = {
+                name: document.getElementById('capFormName').value,
+                category: document.getElementById('capFormCat').value,
+                type: document.getElementById('capFormType').value,
+                description: document.getElementById('capFormDesc').value,
+                trigger: document.getElementById('capFormTrigger').value,
+                outputFormat: document.getElementById('capFormOutput').value,
+                steps: [],
+            };
+            // Collect steps
+            var stepEls = document.querySelectorAll('#capFormSteps .form-row');
+            stepEls.forEach(function(el) {
+                var name = el.querySelector('.step-name');
+                var skill = el.querySelector('.step-skill');
+                if (name && name.value) {
+                    payload.steps.push({ name: name.value, skill: skill ? skill.value : '' });
+                }
+            });
+            
+            if (isEdit) {
+                fetch('/api/capabilities/' + capId, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) })
+                    .then(function() { closeModal(); loadCapabilities(); });
+            } else {
+                fetch('/api/capabilities', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) })
+                    .then(function() { closeModal(); loadCapabilities(); });
+            }
+        });
+    });
+}
+
+function addCapStep() {
+    var container = document.getElementById('capFormSteps');
+    var div = document.createElement('div');
+    div.className = 'form-row';
+    div.style.marginBottom = '4px';
+    div.innerHTML = '<input type="text" class="step-name" placeholder="步骤名称"><input type="text" class="step-skill" placeholder="选择Skill..." style="flex:2;"><span class="tv-btn sm default" onclick="this.parentElement.remove()">✕</span>';
+    // Remove hint if present
+    var hint = container.querySelector('.form-hint');
+    if (hint) hint.remove();
+    container.appendChild(div);
+}
+
+function toggleCapStatus(capId) {
+    fetch('/api/capabilities/' + capId).then(function(r) { return r.json(); }).then(function(cap) {
+        var newStatus = cap.status === 'enabled' ? 'disabled' : 'enabled';
+        fetch('/api/capabilities/' + capId, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status:newStatus}) })
+            .then(function() { loadCapabilities(); });
+    });
+}
+
+function deleteCapability(capId) {
+    if (!confirm('确认删除此能力？')) return;
+    fetch('/api/capabilities/' + capId, { method:'DELETE' }).then(function() { loadCapabilities(); });
+}
+
+function showNewCapCategoryModal() {
+    showModal('新建能力分类', '<label>分类名称</label><input type="text" id="newCatName" placeholder="如：税务类"><label>图标</label><input type="text" id="newCatIcon" value="📁" placeholder="📁">', function() {
+        // For demo, just reload
+        closeModal();
+        loadCapCategories();
+    });
+}
+
+// ========================================
+// Knowledge Base
+// ========================================
+var kbActiveCat = null;
+var kbSearchVal = '';
+
+function loadKBData() {
+    Promise.all([
+        fetch('/api/kb/categories').then(function(r) { return r.json(); }),
+        fetch('/api/kb/files').then(function(r) { return r.json(); }),
+    ]).then(function(results) {
+        var cats = results[0];
+        var files = results[1];
+        
+        // Overview cards
+        var ovHtml = '';
+        cats.forEach(function(c) {
+            var total = c.fileCount || 0;
+            var parsed = c.parsedCount || 0;
+            var pct = total > 0 ? Math.round(parsed/total*100) : 0;
+            var barColor = pct === 100 ? '#52c41a' : (pct > 50 ? '#fa8c16' : '#f5222d');
+            var agents = c.boundAgents || [];
+            var agentTags = agents.map(function(a) {
+                var nameMap = {'agent-assistant':'助理','agent-certify':'认证专员','agent-risk':'预警官','agent-declare':'管家','agent-compliance':'合规师'};
+                return '<span class="kb-agent-tag">' + (nameMap[a] || a) + '</span>';
+            }).join('');
+            
+            ovHtml += '<div class="kb-ov-card' + (kbActiveCat === c.id ? ' active' : '') + '" onclick="selectKBCat(\'' + c.id + '\')">' +
+                '<div class="kb-ov-top"><span>' + (c.icon || '📁') + '</span><span class="kb-ov-name">' + c.name + '</span></div>' +
+                '<div class="kb-ov-stats">' + total + ' 文件 · ' + parsed + '/' + total + ' 已解析</div>' +
+                '<div class="kb-ov-progress"><div class="kb-ov-bar"><div class="kb-ov-bar-fill" style="width:' + pct + '%;background:' + barColor + '"></div></div><span class="kb-ov-pct">' + pct + '%</span></div>' +
+                '<div class="kb-ov-agents">' + (agentTags || '<span style="color:#bfbfbf;">未绑定智能体</span>') + '</div>' +
+            '</div>';
+        });
+        document.getElementById('kbOverview').innerHTML = ovHtml || '<div class="kb-empty">📚 暂无知识库分类</div>';
+        
+        // File list for active category
+        renderKBFiles(files, cats);
+    });
+}
+
+function selectKBCat(catId) {
+    kbActiveCat = catId;
+    loadKBData();
+}
+
+function renderKBFiles(files, cats) {
+    if (!kbActiveCat && cats.length > 0) {
+        kbActiveCat = cats[0].id;
+    }
+    var filtered = files.filter(function(f) {
+        if (kbActiveCat && f.categoryId !== kbActiveCat) return false;
+        if (kbSearchVal && f.name.indexOf(kbSearchVal) < 0) return false;
+        return true;
+    });
+    
+    var cat = cats.find(function(c) { return c.id === kbActiveCat; });
+    var title = cat ? (cat.icon + ' ' + cat.name) : '所有文件';
+    
+    var html = '<div class="kb-section-title">' + title + ' <span style="font-size:10px;color:var(--text-disabled);font-weight:400;">(' + filtered.length + ' 文件)</span></div>';
+    
+    if (filtered.length === 0) {
+        html += '<div class="kb-empty">📂 暂无文件，拖拽文件到上方上传区</div>';
+    } else {
+        filtered.forEach(function(f) {
+            var typeLabels = { pdf:'PDF文档', docx:'Word文档', xlsx:'Excel文档', txt:'文本文件', csv:'CSV文件' };
+            var statusColor = f.status === 'parsed' ? '#52c41a' : (f.status === 'parsing' ? '#fa8c16' : '#f5222d');
+            var statusBg = f.status === 'parsed' ? '#f6ffed' : (f.status === 'parsing' ? '#fff7e6' : '#fff1f0');
+            var statusLabel = f.status === 'parsed' ? '✅ 已解析' : (f.status === 'parsing' ? '⏳ 解析中' : '❌ 解析失败');
+            var agents = f.referencedBy || [];
+            var refHtml = agents.length > 0 ? '<div class="kb-fi-ref">🤖 ' + agents.length + ' 个智能体引用此文件</div>' : '';
+            
+            html += '<div class="kb-file-item">' +
+                '<span class="kb-fi-icon">' + (f.type === 'pdf' ? '📄' : f.type === 'docx' ? '📝' : f.type === 'xlsx' ? '📊' : '📃') + '</span>' +
+                '<div class="kb-fi-body" onclick="previewKBFile(\'' + f.id + '\')">' +
+                    '<div class="kb-fi-name">' + f.name + '</div>' +
+                    '<div class="kb-fi-meta">' + (typeLabels[f.type] || '文档') + ' · ' + (f.size > 1000000 ? (f.size/1000000).toFixed(1)+'MB' : Math.round(f.size/1000)+'KB') + (f.parsedAt ? ' · ' + f.parsedAt : '') + '</div>' +
+                    refHtml +
+                '</div>' +
+                '<span class="kb-fi-status" style="background:' + statusBg + ';color:' + statusColor + ';">' + statusLabel + '</span>' +
+                '<span class="kb-fi-time">' + f.uploadedAt + '</span>' +
+                '<div class="kb-fi-actions">' +
+                    '<span class="kb-fi-action" onclick="previewKBFile(\'' + f.id + '\')">👁️</span>' +
+                    '<span class="kb-fi-action danger" onclick="deleteKBFile(\'' + f.id + '\')">🗑️</span>' +
+                '</div>' +
+            '</div>';
+        });
+    }
+    document.getElementById('kbFileList').innerHTML = html;
+}
+
+function filterKBFiles(val) {
+    kbSearchVal = val;
+    loadKBData();
+}
+
+function handleKBUpload(input) {
+    var files = input.files;
+    if (!files || files.length === 0) return;
+    var catId = kbActiveCat;
+    fetch('/api/kb/categories').then(function(r) { return r.json(); }).then(function(cats) {
+        if (!catId && cats.length > 0) catId = cats[0].id;
+        if (!catId) { alert('请先创建知识库分类'); return; }
+        
+        var uploaded = 0;
+        var totalFiles = files.length;
+        
+        // Show progress indicator
+        var progressDiv = document.createElement('div');
+        progressDiv.className = 'kb-upload-progress';
+        progressDiv.innerHTML = '⏳ 正在上传 ' + totalFiles + ' 个文件...';
+        document.getElementById('kbUploadZone').after(progressDiv);
+        
+        function uploadNext(idx) {
+            if (idx >= totalFiles) {
+                progressDiv.className = 'kb-upload-progress';
+                progressDiv.innerHTML = '✅ 上传完成！' + totalFiles + ' 个文件已添加';
+                setTimeout(function() { progressDiv.remove(); }, 2000);
+                loadKBData();
+                return;
+            }
+            
+            var f = files[idx];
+            var payload = {
+                name: f.name,
+                categoryId: catId,
+                type: f.name.split('.').pop().toLowerCase(),
+                size: f.size,
+            };
+            
+            fetch('/api/kb/files', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload),
+            }).then(function(r) { return r.json(); }).then(function(newFile) {
+                progressDiv.innerHTML = '⏳ 正在解析: ' + f.name;
+                // Simulate parsing delay
+                setTimeout(function() {
+                    fetch('/api/kb/files/' + newFile.id + '/simulate-parse', { method:'POST' }).then(function() {
+                        uploaded++;
+                        uploadNext(idx + 1);
+                    });
+                }, 800);
+            });
+        }
+        uploadNext(0);
+    });
+    input.value = '';
+}
+
+function previewKBFile(fileId) {
+    fetch('/api/kb/files').then(function(r) { return r.json(); }).then(function(files) {
+        var f = files.find(function(x) { return x.id === fileId; });
+        if (!f) return;
+        var snippet = f.snippet || '暂无预览内容';
+        var body = '<div style="white-space:pre-wrap;font-size:11px;line-height:1.7;color:var(--text-secondary);background:var(--bg);padding:12px;border-radius:6px;max-height:300px;overflow-y:auto;">' + snippet + '</div>' +
+            '<div style="margin-top:10px;font-size:10px;color:var(--text-tertiary);">文件名: ' + f.name + '<br>类型: ' + (f.type === 'pdf' ? 'PDF' : f.type) + '<br>上传时间: ' + f.uploadedAt + '</div>';
+        showModal('👁️ ' + f.name, body, null, '关闭');
+    });
+}
+
+function deleteKBFile(fileId) {
+    if (!confirm('确认删除此文件？')) return;
+    fetch('/api/kb/files/' + fileId, { method:'DELETE' }).then(function() { loadKBData(); });
+}
+
+// ========================================
+// Agent Management
+// ========================================
+var PRESET_AGENTS = AGENTS;  // From Flask template data
+
+function renderPresetAgents() {
+    var html = '';
+    PRESET_AGENTS.forEach(function(a) {
+        var badgeClass = a.status === 'urgent' ? 'badge-urgent' : (a.status === 'warning' ? 'badge-warning' : (a.status === 'normal' ? 'badge-normal' : 'badge-idle'));
+        html += '<div class="ag-preset-card" onclick="viewPresetAgent(\'' + a.id + '\')">' +
+            '<span class="ag-preset-icon">' + a.icon + '</span>' +
+            '<div class="ag-preset-name">' + a.name + '</div>' +
+            '<div class="ag-preset-role">' + a.role + '</div>' +
+            '<span class="ag-preset-badge ' + badgeClass + '">' + a.badge + '</span>' +
+            '<div class="ag-preset-footer"><span>预设</span><span>不可删除</span></div>' +
+        '</div>';
+    });
+    document.getElementById('agPresetGrid').innerHTML = html;
+}
+
+function viewPresetAgent(agentId) {
+    var a = PRESET_AGENTS.find(function(x) { return x.id === agentId; });
+    if (!a) return;
+    var body = '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">' +
+        '<span style="font-size:32px;">' + a.icon + '</span>' +
+        '<div><div style="font-size:14px;font-weight:600;">' + a.name + '</div><div style="font-size:11px;color:var(--text-tertiary);">' + a.role + '</div></div>' +
+        '<span class="ag-preset-badge badge-idle" style="margin-left:auto;">预设</span></div>' +
+        '<div style="font-size:11px;line-height:1.6;background:var(--bg);padding:10px;border-radius:6px;white-space:pre-wrap;">' + (a.greeting || '') + '</div>' +
+        '<div style="margin-top:10px;font-size:10px;color:var(--text-tertiary);">风格: ' + (a.style || '专业') + ' · 系统预设不可删除</div>';
+    showModal('🤖 ' + a.name, body, null, '关闭');
+}
+
+function loadManagedAgents() {
+    fetch('/api/managed-agents').then(function(r) { return r.json(); }).then(function(agents) {
+        document.getElementById('agCount').textContent = agents.length + ' 个智能体';
+        if (agents.length === 0) {
+            document.getElementById('agGrid').innerHTML = '<div class="ag-empty">🤖 暂无自定义智能体，点击上方按钮创建</div>';
+            return;
+        }
+        var html = '';
+        agents.forEach(function(a) {
+            var statusColor = a.status === 'online' ? '#52c41a' : '#fa8c16';
+            var statusBg = a.status === 'online' ? '#f6ffed' : '#fff7e6';
+            var statusLabel = a.status === 'online' ? '🟢 在线' : '⏸️ 暂停';
+            var styleLabels = { professional:'严谨专业', concise:'简洁高效', data:'数据分析', friendly:'友善亲和' };
+            var capsHtml = (a.capabilities || []).map(function() { return '<span class="ag-card-bind-tag">🔧 能力</span>'; }).join('');
+            var kbHtml = (a.knowledgeBases || []).map(function() { return '<span class="ag-card-bind-tag">📚 知识</span>'; }).join('');
+            
+            html += '<div class="ag-card">' +
+                '<div class="ag-card-header">' +
+                    '<div class="ag-card-icon">' + a.icon + '</div>' +
+                    '<div class="ag-card-info">' +
+                        '<div class="ag-card-name">' + a.name + '</div>' +
+                        '<div class="ag-card-meta-line">' +
+                            '<span style="color:' + statusColor + '">' + statusLabel + '</span>' +
+                            '<span>·</span><span>' + (styleLabels[a.style] || a.style) + '</span>' +
+                            '<span>·</span><span>' + a.model + '</span>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="ag-card-body">' + a.description + '</div>' +
+                '<div class="ag-card-binds">' + capsHtml + kbHtml + '</div>' +
+                '<div class="ag-card-stats">' +
+                    '<span>💬 总对话: ' + (a.stats ? a.stats.totalConversations || 0 : 0) + '</span>' +
+                    '<span>📅 今日: ' + (a.stats ? a.stats.todayConversations || 0 : 0) + '</span>' +
+                    (a.stats && a.stats.lastActiveAt ? '<span>⏰ ' + a.stats.lastActiveAt.slice(0,10) + '</span>' : '') +
+                '</div>' +
+                '<div class="ag-card-actions">' +
+                    '<button class="ag-card-action" onclick="showAgentEditForm(\'' + a.id + '\')">📝 编辑</button>' +
+                    '<button class="ag-card-action ' + (a.status === 'online' ? '' : 'primary') + '" onclick="toggleAgentStatus(\'' + a.id + '\')">' + (a.status === 'online' ? '⏸ 暂停' : '▶ 恢复') + '</button>' +
+                    '<button class="ag-card-action danger" onclick="deleteManagedAgent(\'' + a.id + '\')">🗑 删除</button>' +
+                '</div>' +
+            '</div>';
+        });
+        document.getElementById('agGrid').innerHTML = html;
+    });
+}
+
+function showAgentCreateForm() {
+    showAgentForm(null);
+}
+
+function showAgentEditForm(agentId) {
+    fetch('/api/managed-agents').then(function(r) { return r.json(); }).then(function(agents) {
+        var a = agents.find(function(x) { return x.id === agentId; });
+        if (a) showAgentForm(a);
+    });
+}
+
+function showAgentForm(agent) {
+    var isEdit = !!agent;
+    var title = isEdit ? '编辑智能体' : '创建智能体';
+    var n = agent || { name:'', description:'', icon:'🤖', style:'professional', capabilities:[], knowledgeBases:[], model:'Claude 4', temperature:0.3, proactiveSettings:{dailyBriefing:{enabled:false,time:'08:30'},emergencyAlert:{enabled:false}} };
+    
+    var styleOpts = ['professional','concise','data','friendly'].map(function(s) {
+        var labels = { professional:'严谨专业', concise:'简洁高效', data:'数据分析', friendly:'友善亲和' };
+        return '<option value="' + s + '"' + (s === n.style ? ' selected' : '') + '>' + labels[s] + '</option>';
+    }).join('');
+    
+    var capsOpts = '';
+    fetch('/api/capabilities').then(function(r) { return r.json(); }).then(function(caps) {
+        capsOpts = caps.map(function(c) {
+            var selected = (n.capabilities || []).indexOf(c.id) >= 0;
+            return '<span class="tag-opt' + (selected ? ' selected' : '') + '" data-id="' + c.id + '" onclick="this.classList.toggle(\'selected\')">' + c.icon + ' ' + c.name + '</span>';
+        }).join('');
+        
+        var kbOpts = '';
+        fetch('/api/kb/categories').then(function(r) { return r.json(); }).then(function(kbs) {
+            kbOpts = kbs.map(function(k) {
+                var selected = (n.knowledgeBases || []).indexOf(k.id) >= 0;
+                return '<span class="tag-opt' + (selected ? ' selected' : '') + '" data-id="' + k.id + '" onclick="this.classList.toggle(\'selected\')">' + (k.icon || '📁') + ' ' + k.name + '</span>';
+            }).join('');
+            
+            var body = '<label>智能体名称</label><input type="text" id="agFormName" value="' + n.name + '" placeholder="如：税务合规助手">' +
+                '<label>角色描述</label><textarea id="agFormDesc" placeholder="你是一名..." style="min-height:50px;">' + n.description + '</textarea>' +
+                '<div class="form-row"><div><label>回复风格</label><select id="agFormStyle">' + styleOpts + '</select></div>' +
+                '<div><label>模型选择</label><select id="agFormModel"><option' + (n.model === 'Claude 4' ? ' selected' : '') + '>Claude 4</option><option' + (n.model === 'GPT-4o' ? ' selected' : '') + '>GPT-4o</option><option' + (n.model === 'Gemini 2.5' ? ' selected' : '') + '>Gemini 2.5</option></select></div></div>' +
+                '<label>绑定能力</label><div class="tag-select" id="agFormCaps">' + (capsOpts || '<span class="form-hint">暂无可用能力</span>') + '</div>' +
+                '<label>绑定知识库</label><div class="tag-select" id="agFormKBs">' + (kbOpts || '<span class="form-hint">暂无知识库</span>') + '</div>' +
+                '<label style="margin-top:10px;">主动推送</label>' +
+                '<div style="display:flex;gap:12px;">' +
+                    '<label style="font-weight:400;display:flex;align-items:center;gap:4px;margin:0;"><input type="checkbox" id="agFormDaily"' + (n.proactiveSettings && n.proactiveSettings.dailyBriefing && n.proactiveSettings.dailyBriefing.enabled ? ' checked' : '') + '> 每日简报 (08:30)</label>' +
+                    '<label style="font-weight:400;display:flex;align-items:center;gap:4px;margin:0;"><input type="checkbox" id="agFormAlert"' + (n.proactiveSettings && n.proactiveSettings.emergencyAlert && n.proactiveSettings.emergencyAlert.enabled ? ' checked' : '') + '> 紧急预警</label>' +
+                '</div>';
+            
+            showModal(title, body, function() {
+                var caps = [];
+                document.querySelectorAll('#agFormCaps .tag-opt.selected').forEach(function(el) {
+                    caps.push(el.getAttribute('data-id'));
+                });
+                var kbs = [];
+                document.querySelectorAll('#agFormKBs .tag-opt.selected').forEach(function(el) {
+                    kbs.push(el.getAttribute('data-id'));
+                });
+                
+                var payload = {
+                    name: document.getElementById('agFormName').value,
+                    description: document.getElementById('agFormDesc').value,
+                    icon: n.icon || '🤖',
+                    style: document.getElementById('agFormStyle').value,
+                    model: document.getElementById('agFormModel').value,
+                    temperature: 0.3,
+                    capabilities: caps,
+                    knowledgeBases: kbs,
+                    proactiveSettings: {
+                        dailyBriefing: { enabled: document.getElementById('agFormDaily').checked, time: '08:30' },
+                        emergencyAlert: { enabled: document.getElementById('agFormAlert').checked },
+                    },
+                };
+                
+                if (isEdit) {
+                    fetch('/api/managed-agents/' + agent.id, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) })
+                        .then(function() { closeModal(); loadManagedAgents(); });
+                } else {
+                    fetch('/api/managed-agents', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) })
+                        .then(function() { closeModal(); loadManagedAgents(); });
+                }
+            });
+        });
+    });
+}
+
+function toggleAgentStatus(agentId) {
+    fetch('/api/managed-agents/' + agentId + '/toggle-status', { method:'POST' })
+        .then(function() { loadManagedAgents(); });
+}
+
+function deleteManagedAgent(agentId) {
+    if (!confirm('确认删除此智能体？')) return;
+    fetch('/api/managed-agents/' + agentId, { method:'DELETE' })
+        .then(function() { loadManagedAgents(); });
+}
+
+// ========================================
+// Modal Utility
+// ========================================
+function showModal(title, bodyHtml, onSave, saveLabel) {
+    closeModal();
+    var overlay = document.createElement('div');
+    overlay.className = 'tv-modal-overlay';
+    overlay.id = 'tvModal';
+    overlay.onclick = function(e) { if (e.target === this) closeModal(); };
+    
+    var footerBtns = '';
+    if (onSave) {
+        footerBtns = '<button class="tv-btn default" onclick="closeModal()">取消</button><button class="tv-btn primary" id="modalSaveBtn">' + (saveLabel || '💾 保存') + '</button>';
+    } else {
+        footerBtns = '<button class="tv-btn primary" onclick="closeModal()">' + (saveLabel || '关闭') + '</button>';
+    }
+    
+    overlay.innerHTML = '<div class="tv-modal">' +
+        '<div class="tv-modal-header"><div class="tv-modal-title">' + title + '</div><button class="tv-modal-close" onclick="closeModal()">✕</button></div>' +
+        '<div class="tv-modal-body">' + bodyHtml + '</div>' +
+        '<div class="tv-modal-footer">' + footerBtns + '</div>' +
+    '</div>';
+    document.body.appendChild(overlay);
+    
+    if (onSave) {
+        document.getElementById('modalSaveBtn').onclick = onSave;
+    }
+}
+
+function closeModal() {
+    var el = document.getElementById('tvModal');
+    if (el) el.remove();
+}
 </body>
 </html>
