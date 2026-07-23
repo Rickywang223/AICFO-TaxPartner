@@ -621,7 +621,6 @@ export const agentKnowledge = {
 
 
 export const capabilityCategories = [
-  { id: 'all',    name: '全部能力', icon: '📁', builtIn: true },
   { id: 'mcp',    name: 'MCP服务',  icon: '🔌', builtIn: true },
   { id: 'model',  name: '大模型',   icon: '🤖', builtIn: true },
   { id: 'channel',name: '聊天通道', icon: '💬', builtIn: true },

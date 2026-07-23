@@ -146,7 +146,7 @@ import { capabilityCategories, capabilities } from '../mockData.js'
 
 const categories = capabilityCategories
 const allCaps = capabilities
-const activeCat = ref('all')
+const activeCat = ref('mcp')
 const searchQuery = ref('')
 const modalOpen = ref(false)
 const isEditing = ref(false)
@@ -160,7 +160,7 @@ const form = reactive({
 })
 
 const filteredCaps = computed(() => {
-  let list = activeCat.value === 'all' ? allCaps : allCaps.filter(c => c.category === activeCat.value)
+  let list = allCaps.filter(c => c.category === activeCat.value)
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase()
     list = list.filter(c => c.name.toLowerCase().includes(q) || c.description.toLowerCase().includes(q))
@@ -171,7 +171,6 @@ const filteredCaps = computed(() => {
 const groupedCaps = computed(() => {
   const groups = []
   for (const cat of categories) {
-    if (cat.id === 'all') continue
     const items = filteredCaps.value.filter(c => c.category === cat.id)
     if (items.length) groups.push({ catId: cat.id, catName: cat.name, catIcon: cat.icon, items })
   }
