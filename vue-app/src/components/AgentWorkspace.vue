@@ -189,7 +189,7 @@ function handleAction(action) {
 /* 统一标题栏（双行） */
 .workspace-header {
   flex-shrink: 0;
-  padding: 8px 16px 0;
+  padding: 24px 16px 12px;
 }
 .header-top {
   display: flex;
