@@ -4,3 +4,6 @@ __pycache__/
 *.log
 venv/
 .env
+vue-app/node_modules/
+vue-app/dist/
+.vue-app/dist/
