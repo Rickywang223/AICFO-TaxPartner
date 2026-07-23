@@ -1,22 +1,35 @@
 <template>
   <div class="workspace">
-    <!-- Chat Panel (1/3) -->
-    <div class="workspace-chat">
-      <ChatPanel
-        :agent="currentAgent"
-        :messages="messages"
-        :sending="sending"
-        @send="handleSend"
-        @action="handleAction"
-      />
+    <!-- 统一标题栏 -->
+    <div class="workspace-header">
+      <div class="header-left">
+        <span class="header-icon">{{ currentAgent.icon }}</span>
+        <span class="header-name">{{ currentAgent.name }}</span>
+        <span class="header-divider">|</span>
+        <span class="header-summary">{{ currentAgent.summary }}</span>
+      </div>
+      <div class="header-right">
+        <a-tag :color="badgeColor" class="header-badge">{{ currentAgent.badge }}</a-tag>
+      </div>
     </div>
 
-    <!-- Dashboard Panel (2/3) -->
-    <div class="workspace-dash">
-      <AgentDashboard
-        :dashboard="currentDashboard"
-        @action="handleAction"
-      />
+    <!-- 工作区主体：聊天 + 看板 -->
+    <div class="workspace-body">
+      <div class="workspace-chat">
+        <ChatPanel
+          :agent="currentAgent"
+          :messages="messages"
+          :sending="sending"
+          @send="handleSend"
+          @action="handleAction"
+        />
+      </div>
+      <div class="workspace-dash">
+        <AgentDashboard
+          :dashboard="currentDashboard"
+          @action="handleAction"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -31,12 +44,13 @@ import {
   agentDashboards,
   initialMessages,
   getChatResponse,
+  getBadgeColor,
 } from '../mockData.js'
 
 const route = useRoute()
 
-// Current agent from route param
 const agentId = computed(() => route.params.agentId || 'agent-assistant')
+const badgeColor = computed(() => getBadgeColor(currentAgent.value.status))
 
 const currentAgent = computed(() => {
   return agents.find(a => a.id === agentId.value) || agents[0]
@@ -46,11 +60,9 @@ const currentDashboard = computed(() => {
   return agentDashboards[agentId.value] || agentDashboards['agent-assistant']
 })
 
-// Messages state - reset when agent changes
 const messages = ref([])
 const sending = ref(false)
 
-// Watch for agent changes -> reset messages
 watch(agentId, () => {
   resetMessages()
 }, { immediate: true })
@@ -64,29 +76,20 @@ function resetMessages() {
   }
 }
 
-// Handle sending a message
 function handleSend(text) {
   if (sending.value) return
-
   sending.value = true
 
-  // Simulate API call delay
   setTimeout(() => {
-    // Get response based on agent + user text
     const response = getChatResponse(agentId.value, text)
-
-    // Add new messages
     if (response.messages) {
       messages.value.push(...response.messages)
     }
-
     sending.value = false
-  }, 600) // 600ms simulated delay for natural feel
+  }, 600)
 }
 
-// Handle action button clicks from both chat and dashboard
 function handleAction(action) {
-  // Map action to a simulated user message
   let userText = ''
 
   switch (action.action) {
@@ -155,25 +158,81 @@ function handleAction(action) {
 <style scoped>
 .workspace {
   display: flex;
+  flex-direction: column;
   height: 100%;
-  overflow: hidden;
+  padding: 16px 16px 16px 16px;
+  gap: 12px;
+}
+
+/* 统一标题栏 */
+.workspace-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+  background: #fff;
+  border-radius: 10px;
+  padding: 0 16px;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.header-icon {
+  font-size: 22px;
+}
+.header-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+.header-divider {
+  color: #e8e8e8;
+  font-size: 14px;
+  font-weight: 200;
+}
+.header-summary {
+  font-size: 13px;
+  color: #8c8c8c;
+}
+.header-right {
+  display: flex;
+  align-items: center;
+}
+.header-badge {
+  font-size: 12px;
+}
+
+/* 工作区主体 */
+.workspace-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  gap: 12px;
 }
 
 .workspace-chat {
   width: 380px;
   min-width: 320px;
   flex-shrink: 0;
-  height: 100%;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
 }
 
 .workspace-dash {
   flex: 1;
   min-width: 0;
-  height: 100%;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
   overflow: hidden;
 }
 
-/* Responsive: on narrower screens, chat can collapse */
 @media (max-width: 1280px) {
   .workspace-chat {
     width: 340px;

@@ -1,19 +1,5 @@
 <template>
   <div class="chat-panel">
-    <!-- Agent Header -->
-    <div class="chat-header">
-      <div class="chat-header-left">
-        <span class="chat-agent-icon">{{ agent.icon }}</span>
-        <div class="chat-agent-info">
-          <div class="chat-agent-name">{{ agent.name }}</div>
-          <div class="chat-agent-summary">{{ agent.summary }}</div>
-        </div>
-      </div>
-      <a-tag :color="badgeColor" class="chat-badge">{{ agent.badge }}</a-tag>
-    </div>
-
-    <a-divider style="margin: 0" />
-
     <!-- Messages -->
     <div class="messages-area" ref="messagesRef">
       <div
@@ -23,12 +9,9 @@
         :class="{ 'message-user': msg.role === 'user', 'message-ai': msg.role === 'ai' }"
       >
         <div class="message-bubble" :class="{ 'bubble-user': msg.role === 'user', 'bubble-ai': msg.role === 'ai' }">
-          <!-- AI message: render markdown-like syntax -->
           <div v-if="msg.role === 'ai'" class="message-content" v-html="renderMarkdown(msg.text)"></div>
-          <!-- User message: plain text -->
           <div v-else class="message-content">{{ msg.text }}</div>
 
-          <!-- Action buttons (AI only) -->
           <div v-if="msg.role === 'ai' && msg.actions && msg.actions.length" class="message-actions">
             <a-button
               v-for="(act, aidx) in msg.actions"
@@ -40,31 +23,49 @@
             >{{ act.text }}</a-button>
           </div>
 
-          <!-- Timestamp -->
           <div class="message-time">{{ msg.time }}</div>
         </div>
       </div>
     </div>
 
+    <!-- File Preview Bar -->
+    <div v-if="attachments.length" class="file-preview-bar">
+      <div v-for="(file, idx) in attachments" :key="idx" class="file-tag">
+        <span class="file-icon">{{ fileIcon(file.type) }}</span>
+        <span class="file-name">{{ file.name }}</span>
+        <span class="file-remove" @click="removeFile(idx)">×</span>
+      </div>
+    </div>
+
     <!-- Input Area -->
     <div class="input-area">
-      <a-divider style="margin: 0" />
-      <div class="input-row">
-        <a-input
-          v-model:value="inputText"
-          placeholder="问AI... 例如：今天有什么需要处理的？"
-          class="chat-input"
-          @press-enter="sendMessage"
+      <div class="input-wrapper">
+        <textarea
+          v-model="inputText"
+          class="chat-textarea"
+          placeholder="输入消息..."
           :disabled="sending"
-        />
-        <a-button
-          type="primary"
-          class="send-btn"
-          @click="sendMessage"
-          :loading="sending"
-        >
-          <template #icon><SendOutlined /></template>
-        </a-button>
+          @keydown="handleKeydown"
+          rows="1"
+          ref="textareaRef"
+        ></textarea>
+      </div>
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <button class="toolbar-btn" title="上传附件" @click="triggerUpload">
+            <label class="upload-label">
+              📎
+              <input type="file" ref="fileInputRef" class="file-input-hidden" @change="handleFileSelect" multiple accept=".pdf,.xls,.xlsx,.doc,.docx,.png,.jpg,.jpeg" />
+            </label>
+          </button>
+          <button class="toolbar-btn" title="表情" @click="toggleEmoji">😊</button>
+          <button class="toolbar-btn" title="截图" @click="handleScreenshot">📷</button>
+        </div>
+        <div class="toolbar-right">
+          <button class="send-btn" :class="{ 'send-active': inputText.trim() }" :disabled="sending || !inputText.trim()" @click="sendMessage">
+            ➡️
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -72,8 +73,6 @@
 
 <script setup>
 import { ref, watch, nextTick, computed } from 'vue'
-import { SendOutlined } from '@ant-design/icons-vue'
-import { getBadgeColor } from '../mockData.js'
 
 const props = defineProps({
   agent: { type: Object, required: true },
@@ -85,7 +84,9 @@ const emit = defineEmits(['send', 'action'])
 
 const inputText = ref('')
 const messagesRef = ref(null)
-const badgeColor = computed(() => getBadgeColor(props.agent.status))
+const textareaRef = ref(null)
+const fileInputRef = ref(null)
+const attachments = ref([])
 
 // Auto-scroll to bottom when messages change
 watch(() => props.messages.length, async () => {
@@ -93,12 +94,10 @@ watch(() => props.messages.length, async () => {
   scrollToBottom()
 })
 
-function sendMessage() {
-  const text = inputText.value.trim()
-  if (!text) return
-  emit('send', text)
-  inputText.value = ''
-}
+// Auto-resize textarea
+watch(inputText, () => {
+  autoResizeTextarea()
+})
 
 function scrollToBottom() {
   if (messagesRef.value) {
@@ -106,35 +105,84 @@ function scrollToBottom() {
   }
 }
 
-// Simple markdown renderer for AI messages
+function autoResizeTextarea() {
+  const ta = textareaRef.value
+  if (!ta) return
+  ta.style.height = 'auto'
+  const lineHeight = 22
+  const maxHeight = lineHeight * 6 + 12
+  const newHeight = Math.min(ta.scrollHeight, maxHeight)
+  ta.style.height = Math.max(lineHeight + 12, newHeight) + 'px'
+}
+
+function handleKeydown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault()
+    sendMessage()
+  }
+}
+
+function sendMessage() {
+  const text = inputText.value.trim()
+  if (!text || props.sending) return
+  emit('send', text)
+  inputText.value = ''
+  attachments.value = []
+  autoResizeTextarea()
+}
+
+// File/Attachment handling
+function triggerUpload() {
+  fileInputRef.value?.click()
+}
+
+function handleFileSelect(e) {
+  const files = Array.from(e.target.files)
+  const remaining = 5 - attachments.value.length
+  files.slice(0, remaining).forEach(f => {
+    attachments.value.push({ name: f.name, type: f.type, size: f.size, file: f })
+  })
+  e.target.value = ''
+}
+
+function removeFile(idx) {
+  attachments.value.splice(idx, 1)
+}
+
+function fileIcon(type) {
+  if (!type) return '📄'
+  if (type.includes('pdf')) return '📕'
+  if (type.includes('excel') || type.includes('sheet') || type.includes('xls')) return '📊'
+  if (type.includes('word') || type.includes('doc')) return '📝'
+  if (type.includes('image') || type.includes('png') || type.includes('jpg')) return '🖼️'
+  return '📄'
+}
+
+function toggleEmoji() {
+  // Emoji picker - placeholder, insert a random emoji for demo
+  const emojis = ['😊', '👍', '✅', '📌', '⚠️', '🔥', '💰', '📋', '⏰', '📢']
+  const emoji = emojis[Math.floor(Math.random() * emojis.length)]
+  inputText.value += emoji
+  textareaRef.value?.focus()
+}
+
+function handleScreenshot() {
+  // Screenshot trigger - placeholder, insert a screenshot file marker
+  attachments.value.push({
+    name: `截图_${new Date().toLocaleTimeString('zh-CN', {hour: '2-digit', minute: '2-digit'})}.png`,
+    type: 'image/png',
+    size: 0,
+    isScreenshot: true,
+  })
+}
+
+// Markdown renderer
 function renderMarkdown(text) {
   if (!text) return ''
-
-  let html = text
-    // Escape HTML
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    // Bold
+  return text
+    .replace(/### (.+)/g, '<h4>$1</h4>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    // Inline code
-    .replace(/`(.+?)`/g, '<code>$1</code>')
-    // Table: | col1 | col2 | ...\n |---|---| ...\n | val1 | val2 | ...
-    .replace(/\|(.+)\|/g, (match) => {
-      // Check if it's a table row
-      const cells = match.split('|').filter(c => c.trim()).map(c => c.trim())
-      if (cells.length === 0) return match
-      const cellHtml = cells.map(c => `<td>${c}</td>`).join('')
-      return `<tr>${cellHtml}</tr>`
-    })
-    // Wrap consecutive <tr> in <table>
-    .replace(/((?:<tr>.*?<\/tr>\n?)+)/g, '<table class="msg-table">$1</table>')
-    // Remove separator rows (|---| pattern)
-    .replace(/<tr>(<td>[—\-]+<\/td>\s*)+<\/tr>/g, '')
-    // Line breaks
-    .replace(/\n/g, '<br>')
-
-  return html
+    .replace(/\n/g, '<br/>')
 }
 </script>
 
@@ -143,169 +191,193 @@ function renderMarkdown(text) {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: #fff;
-  border-right: 1px solid #f0f0f0;
-}
-
-/* Header */
-.chat-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 16px;
-  flex-shrink: 0;
-}
-.chat-header-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-.chat-agent-icon {
-  font-size: 24px;
-  flex-shrink: 0;
-}
-.chat-agent-info {
-  min-width: 0;
-}
-.chat-agent-name {
-  font-size: 15px;
-  font-weight: 600;
-  color: #1a1a2e;
-  line-height: 1.3;
-}
-.chat-agent-summary {
-  font-size: 12px;
-  color: #8c8c8c;
-  line-height: 1.3;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.chat-badge {
-  flex-shrink: 0;
-  font-size: 11px;
 }
 
 /* Messages */
 .messages-area {
   flex: 1;
   overflow-y: auto;
-  padding: 12px 16px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  background: #fafafa;
+  gap: 12px;
 }
 
 .message-row {
   display: flex;
-  flex-direction: column;
 }
 .message-user {
-  align-items: flex-end;
+  justify-content: flex-end;
 }
 .message-ai {
-  align-items: flex-start;
+  justify-content: flex-start;
 }
 
 .message-bubble {
-  max-width: 95%;
+  max-width: 85%;
   padding: 10px 14px;
-  border-radius: 12px;
+  border-radius: 10px;
   font-size: 13px;
   line-height: 1.6;
-  position: relative;
 }
-
-.bubble-ai {
-  background: #fff;
-  border: 1px solid #e8e8e8;
-  color: #1a1a2e;
-  border-bottom-left-radius: 4px;
-}
-
 .bubble-user {
   background: #1677ff;
   color: #fff;
   border-bottom-right-radius: 4px;
 }
+.bubble-ai {
+  background: #f5f6fa;
+  color: #1a1a2e;
+  border-bottom-left-radius: 4px;
+}
 
 .message-content {
   word-break: break-word;
 }
-
-.message-time {
-  font-size: 11px;
-  color: #bbb;
-  margin-top: 4px;
+.message-content h4 {
+  margin: 6px 0 4px;
+  font-size: 14px;
 }
-
-.message-user .message-time {
-  color: rgba(255,255,255,0.6);
-  text-align: right;
-}
-
-/* Action buttons */
 .message-actions {
   display: flex;
-  flex-wrap: wrap;
   gap: 6px;
-  margin-top: 10px;
-  padding-top: 8px;
-  border-top: 1px solid #f0f0f0;
+  margin-top: 8px;
+  flex-wrap: wrap;
 }
-
 .action-btn {
   font-size: 12px;
 }
-
-/* Table styling in messages */
-:deep(.msg-table) {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 6px 0;
-  font-size: 12px;
-}
-:deep(.msg-table td) {
-  padding: 4px 8px;
-  border: 1px solid #e8e8e8;
-}
-:deep(.msg-table tr:first-child td) {
-  background: #f5f5f5;
-  font-weight: 500;
+.message-time {
+  font-size: 11px;
+  color: #bfbfbf;
+  margin-top: 4px;
+  text-align: right;
 }
 
-/* Input */
-.input-area {
-  flex-shrink: 0;
-  background: #fff;
+/* File Preview Bar */
+.file-preview-bar {
+  display: flex;
+  gap: 6px;
+  padding: 8px 12px 0;
+  flex-wrap: wrap;
 }
-
-.input-row {
+.file-tag {
   display: flex;
   align-items: center;
-  padding: 10px 16px;
-  gap: 8px;
+  gap: 4px;
+  background: #f5f6fa;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: #595959;
+  border: 1px solid #e8e8e8;
+}
+.file-icon {
+  font-size: 14px;
+}
+.file-name {
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.file-remove {
+  cursor: pointer;
+  color: #bfbfbf;
+  font-size: 14px;
+  line-height: 1;
+  margin-left: 2px;
+}
+.file-remove:hover {
+  color: #f5222d;
 }
 
-.chat-input {
-  flex: 1;
+/* Input Area */
+.input-area {
+  border-top: 1px solid #f0f0f0;
+  padding: 8px 12px 10px;
 }
-
-.send-btn {
-  flex-shrink: 0;
+.input-wrapper {
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 6px 10px;
+  transition: border-color 0.15s;
+  background: #fff;
 }
-
-/* Scrollbar styling */
-.messages-area::-webkit-scrollbar {
-  width: 4px;
+.input-wrapper:focus-within {
+  border-color: #1677ff;
 }
-.messages-area::-webkit-scrollbar-thumb {
-  background: #d9d9d9;
-  border-radius: 2px;
-}
-.messages-area::-webkit-scrollbar-track {
+.chat-textarea {
+  width: 100%;
+  border: none;
+  outline: none;
+  resize: none;
+  font-size: 13px;
+  line-height: 22px;
+  color: #1a1a2e;
+  font-family: inherit;
   background: transparent;
+  min-height: 34px;
+  max-height: 144px;
+}
+.chat-textarea::placeholder {
+  color: #bfbfbf;
+}
+
+/* Toolbar */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.toolbar-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  line-height: 1;
+  transition: background 0.15s;
+}
+.toolbar-btn:hover {
+  background: #f0f0f0;
+}
+.upload-label {
+  cursor: pointer;
+}
+.file-input-hidden {
+  display: none;
+}
+.toolbar-right {
+  display: flex;
+  align-items: center;
+}
+.send-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  line-height: 1;
+  opacity: 0.4;
+  transition: opacity 0.15s, background 0.15s;
+}
+.send-btn.send-active {
+  opacity: 1;
+}
+.send-btn:hover {
+  background: #f0f0f0;
+}
+.send-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.3;
 }
 </style>
