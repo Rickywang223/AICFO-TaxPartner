@@ -4,9 +4,9 @@ AI CFO · AI原生交互版 · 智能税务合伙人
 包含：对话引擎 + 能力中心 + 知识库 + 智能体管理 API
 """
 import json, os, uuid, time
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory, send_file
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='vue-dist', static_url_path='/vue-app')
 app.config['SECRET_KEY'] = 'ai-cfo-next-secret'
 DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
 os.makedirs(DATA_DIR, exist_ok=True)
@@ -415,7 +415,13 @@ def toggle_agent_status(agent_id):
     persist_all()
     return jsonify(a)
 
+@app.route('/vue-app/')
+def serve_vue_index():
+    return app.send_static_file('index.html')
+
 if __name__ == '__main__':
     print("🚀 AI CFO Next (AI原生交互版) 启动中...")
     print("🌐 http://localhost:5003")
     app.run(host='0.0.0.0', port=5003, debug=True)
+
+
