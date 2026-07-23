@@ -41,12 +41,14 @@
         <div class="nav-section agent-section">
           <div v-for="agent in sortedAgents" :key="agent.id" class="agent-entry"
             :class="{ 'agent-active': isAgentActive(agent.id) }" @click="switchAgent(agent)">
-            <div class="agent-avatar">{{ agent.icon }}</div>
+            <div class="agent-avatar">
+              {{ agent.icon }}
+              <span v-if="agent.pendingCount > 0" class="pending-dot">{{ agent.pendingCount > 99 ? '99+' : agent.pendingCount }}</span>
+            </div>
             <div class="agent-info">
               <div class="agent-top-row">
                 <span class="agent-name">{{ agent.name }}</span>
                 <span class="agent-time">{{ agent.lastActive }}</span>
-                <span v-if="agent.pendingCount > 0" class="pending-dot">{{ agent.pendingCount > 99 ? '99+' : agent.pendingCount }}</span>
               </div>
               <div class="agent-summary">{{ agent.summary }}</div>
             </div>
@@ -314,8 +316,26 @@ function switchAgent(agent) {
   flex-shrink: 0;
 }
 
-/* Pending red dot — unread badge style */
+/* Rounded-rectangle avatar */
+.agent-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: #f5f6fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  position: relative;
+}
+
+/* Pending red dot — overlaid on avatar top-left */
 .pending-dot {
+  position: absolute;
+  top: -6px;
+  left: -6px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -328,7 +348,7 @@ function switchAgent(agent) {
   font-size: 11px;
   font-weight: 600;
   line-height: 1;
-  flex-shrink: 0;
+  box-shadow: 0 0 0 2px #fff;
 }
 
 /* Summary line */
