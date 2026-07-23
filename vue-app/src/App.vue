@@ -1,71 +1,74 @@
 <template>
-  <a-layout style="min-height: 100vh">
+  <div class="app-layout">
     <!-- 顶部栏 -->
-    <a-layout-header class="top-header">
+    <header class="app-header">
       <div class="header-left">
         <img :src="logoUrl" alt="云砾" class="logo-img" />
+        <div class="header-divider"></div>
         <span class="logo-text">AI CFO · 智能税务合伙人</span>
+        <div class="header-client">
+          <span class="client-tag">凯德地产</span>
+        </div>
       </div>
       <div class="header-right">
-        <a-badge :count="3" :offset="[-4, 4]" size="small">
-          <a-button type="text" class="header-btn">🔔 通知</a-button>
-        </a-badge>
-        <a-button type="text" class="header-btn">⚙️ 设置</a-button>
-        <a-button type="text" danger class="header-btn">🆘 SOS</a-button>
+        <div class="header-user">
+          <span class="user-role">税务经理</span>
+          <span class="user-name">杨姐</span>
+          <span class="user-avatar">👩‍💼</span>
+        </div>
       </div>
-    </a-layout-header>
+    </header>
 
-    <a-layout>
+    <div class="app-body">
       <!-- 左侧导航栏 -->
-      <a-layout-sider width="220" class="side-sider" :collapsible="false">
+      <aside class="app-sidebar">
         <div class="section-label">🤖 我的智能体</div>
-        <a-menu
-          mode="inline"
-          :selectedKeys="[currentAgentId]"
-          class="agent-menu"
-        >
-          <a-menu-item
+        <div class="agent-list">
+          <div
             v-for="agent in agents"
             :key="agent.id"
+            class="agent-item"
+            :class="{ 'agent-selected': isAgentActive(agent.id) }"
             @click="switchAgent(agent)"
           >
-            <div class="agent-item">
-              <div class="agent-top">
-                <span class="agent-icon">{{ agent.icon }}</span>
-                <span class="agent-name">{{ agent.name }}</span>
-                <a-tag
-                  :color="badgeColor(agent.status)"
-                  size="small"
-                  class="agent-badge"
-                >{{ agent.badge }}</a-tag>
-              </div>
-              <div class="agent-summary">{{ agent.summary }}</div>
+            <div class="agent-top">
+              <span class="agent-icon">{{ agent.icon }}</span>
+              <span class="agent-name">{{ agent.name }}</span>
+              <a-tag
+                :color="badgeColor(agent.status)"
+                size="small"
+                class="agent-badge"
+              >{{ agent.badge }}</a-tag>
             </div>
-          </a-menu-item>
-        </a-menu>
+            <div class="agent-summary">{{ agent.summary }}</div>
+          </div>
+        </div>
 
-        <a-divider style="margin: 12px 0" />
+        <div class="sidebar-divider"></div>
 
         <div class="section-label">🛠 工具</div>
-        <a-menu mode="inline" :selectedKeys="[currentRoute]" class="tool-menu">
-          <a-menu-item key="/capabilities">
-            <router-link to="/capabilities">🔧 能力中心</router-link>
-          </a-menu-item>
-          <a-menu-item key="/knowledge">
-            <router-link to="/knowledge">📚 知识库</router-link>
-          </a-menu-item>
-          <a-menu-item key="/agent-manage">
-            <router-link to="/agent-manage">🤖 管理智能体</router-link>
-          </a-menu-item>
-        </a-menu>
-      </a-layout-sider>
+        <div class="tool-list">
+          <router-link to="/capabilities" class="tool-item" :class="{ 'tool-active': $route.path === '/capabilities' }">
+            <span class="tool-icon">🔧</span>
+            <span class="tool-name">能力中心</span>
+          </router-link>
+          <router-link to="/knowledge" class="tool-item" :class="{ 'tool-active': $route.path === '/knowledge' }">
+            <span class="tool-icon">📚</span>
+            <span class="tool-name">知识库</span>
+          </router-link>
+          <router-link to="/agent-manage" class="tool-item" :class="{ 'tool-active': $route.path === '/agent-manage' }">
+            <span class="tool-icon">🤖</span>
+            <span class="tool-name">管理智能体</span>
+          </router-link>
+        </div>
+      </aside>
 
       <!-- 主内容区 -->
-      <a-layout-content class="main-content">
+      <main class="app-main">
         <router-view />
-      </a-layout-content>
-    </a-layout>
-  </a-layout>
+      </main>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -77,16 +80,9 @@ import logoUrl from './assets/logo.jpg'
 const route = useRoute()
 const router = useRouter()
 
-const currentRoute = computed(() => route.path)
-
-// Extract current agent ID from route params (workspace/:agentId)
-const currentAgentId = computed(() => {
-  if (route.path.startsWith('/workspace/')) {
-    return route.params.agentId
-  }
-  // When on a tool page, highlight none
-  return ''
-})
+function isAgentActive(agentId) {
+  return route.path.startsWith('/workspace/') && route.params.agentId === agentId
+}
 
 function switchAgent(agent) {
   router.push(`/workspace/${agent.id}`)
@@ -101,46 +97,98 @@ function switchAgent(agent) {
   box-sizing: border-box;
 }
 
-/* Top Header */
-.top-header {
+/* ===== 整体布局 ===== */
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ===== 顶部栏 ===== */
+.app-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   height: 56px;
   background: #fff;
-  border-bottom: 1px solid #f0f0f0;
-  padding: 0 20px;
-  line-height: 56px;
+  border-bottom: 1px solid #e8e8e8;
+  padding: 0 24px;
+  flex-shrink: 0;
+  z-index: 10;
 }
 .header-left {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 0;
 }
 .logo-img {
-  height: 28px;
+  height: 26px;
+}
+.header-divider {
+  width: 1px;
+  height: 20px;
+  background: #e0e0e0;
+  margin: 0 16px;
 }
 .logo-text {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   color: #1a1a2e;
+  letter-spacing: 0.3px;
+}
+.header-client {
+  margin-left: 16px;
+  padding-left: 16px;
+  border-left: 1px solid #e0e0e0;
+}
+.client-tag {
+  font-size: 13px;
+  color: #595959;
+  background: #f5f6fa;
+  padding: 2px 10px;
+  border-radius: 4px;
+  font-weight: 500;
 }
 .header-right {
   display: flex;
   align-items: center;
-  gap: 4px;
 }
-.header-btn {
+.header-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.user-role {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+.user-name {
   font-size: 13px;
+  font-weight: 500;
+  color: #1a1a2e;
+}
+.user-avatar {
+  font-size: 20px;
 }
 
-/* Sidebar */
-.side-sider {
+/* ===== 主体区域 ===== */
+.app-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ===== 左侧导航栏 ===== */
+.app-sidebar {
+  width: 220px;
   background: #fff;
-  border-right: 1px solid #f0f0f0;
+  border-right: 1px solid #e8e8e8;
   padding: 16px 0;
   overflow-y: auto;
+  flex-shrink: 0;
 }
+
 .section-label {
   font-size: 12px;
   color: #8c8c8c;
@@ -148,13 +196,26 @@ function switchAgent(agent) {
   font-weight: 500;
   letter-spacing: 0.5px;
 }
-.agent-menu, .tool-menu {
-  border-inline-end: none !important;
-}
 
-/* Agent Item */
+/* Agent List */
+.agent-list {
+  padding: 0 8px;
+}
 .agent-item {
-  padding: 4px 0;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 2px;
+  transition: background 0.15s;
+}
+.agent-item:hover {
+  background: #f5f6fa;
+}
+.agent-selected {
+  background: #f0f5ff !important;
+}
+.agent-selected .agent-name {
+  color: #1677ff;
 }
 .agent-top {
   display: flex;
@@ -183,32 +244,57 @@ function switchAgent(agent) {
   text-overflow: ellipsis;
 }
 
-/* Selected agent in sidebar */
-.ant-menu-item-selected {
-  background: #f0f5ff !important;
-}
-.ant-menu-item-selected .agent-name {
-  color: #1677ff;
+/* Divider */
+.sidebar-divider {
+  height: 1px;
+  background: #f0f0f0;
+  margin: 12px 16px;
 }
 
-/* Tool menu */
-.tool-menu .ant-menu-item {
-  height: 36px;
-  line-height: 36px;
+/* Tool List */
+.tool-list {
+  padding: 0 8px;
+}
+.tool-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  color: #595959;
+  font-size: 13px;
+  transition: background 0.15s;
+  margin-bottom: 2px;
+}
+.tool-item:hover {
+  background: #f5f6fa;
+  color: #1a1a2e;
+}
+.tool-active {
+  background: #f0f5ff !important;
+  color: #1677ff !important;
+}
+.tool-icon {
+  font-size: 14px;
+}
+.tool-name {
   font-size: 13px;
 }
 
-/* Main Content Area */
-.main-content {
+/* ===== 主内容区 ===== */
+.app-main {
+  flex: 1;
   background: #f5f6fa;
   overflow: hidden;
 }
 
 /* Sidebar scroll */
-.side-sider::-webkit-scrollbar {
+.app-sidebar::-webkit-scrollbar {
   width: 4px;
 }
-.side-sider::-webkit-scrollbar-thumb {
+.app-sidebar::-webkit-scrollbar-thumb {
   background: #d9d9d9;
   border-radius: 2px;
 }

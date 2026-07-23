@@ -4,7 +4,7 @@ AI CFO · AI原生交互版 · 智能税务合伙人
 包含：对话引擎 + 能力中心 + 知识库 + 智能体管理 API
 """
 import json, os, uuid, time
-from flask import Flask, render_template, request, jsonify, send_from_directory, send_file
+from flask import Flask, render_template, request, jsonify, send_from_directory, send_file, redirect
 
 app = Flask(__name__, static_folder='vue-dist', static_url_path='/vue-app')
 app.config['SECRET_KEY'] = 'ai-cfo-next-secret'
@@ -170,7 +170,7 @@ conversations = {}
 
 @app.route('/')
 def index():
-    return render_template('index.html', agents=AGENTS)
+    return redirect('/vue-app/#/workspace/agent-assistant')
 
 # ========================================
 # Agent Chat API
