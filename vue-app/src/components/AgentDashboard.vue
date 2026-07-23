@@ -1,16 +1,5 @@
 <template>
   <div class="dashboard-panel">
-    <!-- Tab bar -->
-    <div class="dash-tabs">
-      <div
-        v-for="tab in tabs"
-        :key="tab"
-        class="dash-tab"
-        :class="{ 'dash-tab-active': activeTab === tab }"
-        @click="$emit('tab-change', tab)"
-      >{{ tab }}</div>
-    </div>
-
     <!-- Scrollable content -->
     <div class="dash-scroll">
 
@@ -37,7 +26,7 @@
       </div>
 
       <!-- Section Cards -->
-      <div v-for="sec in filteredSections(dashboard.sections)" :key="sec.id" class="section-card">
+      <div v-for="sec in dashboard.sections" :key="sec.id" class="section-card">
         <div class="section-title">{{ sec.title }}</div>
 
         <!-- Type: invoice-list (高危发票列表) -->
@@ -229,17 +218,9 @@
 <script setup>
 const props = defineProps({
   dashboard: { type: Object, required: true },
-  activeTab: { type: String, default: '总览' },
-  tabs: { type: Array, default: () => ['总览'] },
 })
 
-const emit = defineEmits(['action', 'tab-change'])
-
-// Filter sections by active tab
-function filteredSections(sections) {
-  if (!sections) return []
-  return sections.filter(s => !s.tab || s.tab === props.activeTab)
-}
+const emit = defineEmits(['action'])
 </script>
 
 <style scoped>
@@ -248,33 +229,6 @@ function filteredSections(sections) {
   background: #f5f6fa;
   display: flex;
   flex-direction: column;
-}
-
-/* Tab bar */
-.dash-tabs {
-  display: flex;
-  gap: 2px;
-  padding: 10px 16px 0;
-  flex-shrink: 0;
-  background: #fff;
-}
-.dash-tab {
-  font-size: 13px;
-  color: #8c8c8c;
-  padding: 6px 14px;
-  border-radius: 6px 6px 0 0;
-  cursor: pointer;
-  transition: color 0.15s, background 0.15s;
-  user-select: none;
-}
-.dash-tab:hover {
-  color: #595959;
-  background: #fafafa;
-}
-.dash-tab-active {
-  color: #1677ff;
-  font-weight: 500;
-  background: #f0f5ff;
 }
 
 .dash-scroll {
