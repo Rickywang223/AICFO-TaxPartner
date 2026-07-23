@@ -5,6 +5,7 @@
       <div class="src-tabs">
         <span class="src-tab" :class="{ 'src-active': activeSrc === 'file' }" @click="activeSrc = 'file'">📄 文件</span>
         <span class="src-tab" :class="{ 'src-active': activeSrc === 'db' }" @click="activeSrc = 'db'">🗄️ 数据库</span>
+        <span class="src-tab" :class="{ 'src-active': activeSrc === 'onto' }" @click="activeSrc = 'onto'">🧠 本体</span>
       </div>
 
       <!-- File View -->
@@ -73,7 +74,40 @@
         </div>
         <a-button type="dashed" block @click="showDbModal" style="margin-top: 4px;">+ 连接数据库</a-button>
       </template>
+
+      <!-- Ontology View -->
+      <template v-if="activeSrc === 'onto'">
+        <div v-if="!ontologies.length" class="empty-state"><span class="empty-icon">🧠</span><span class="empty-text">暂无本体，点击下方按钮创建</span></div>
+      <div v-else class="onto-list">
+        <div v-for="onto in ontologies" :key="onto.id" class="onto-card" @click="viewOntology(onto)">
+          <div class="onto-card-top">
+            <span class="onto-icon">{{ onto.icon }}</span>
+            <span class="onto-name">{{ onto.name }}</span>
+            <span class="onto-status" :class="'onto-' + onto.status">{{ onto.status === 'published' ? '🟢 已发布' : '🟡 草稿' }}</span>
+          </div>
+          <div class="onto-desc">{{ onto.description }}</div>
+          <div class="onto-meta">
+            <span>{{ onto.entityCount }}个实体</span>
+            <span>{{ onto.propertyCount }}个属性</span>
+            <span>{{ onto.relationCount }}个关系</span>
+            <span>v{{ onto.version }}</span>
+          </div>
+          <div class="onto-footer">
+            <span class="onto-date">更新于 {{ onto.updatedAt }}</span>
+            <span v-if="onto.boundAgents?.length" class="onto-bound">🤖 绑定: {{ onto.boundAgents.map(a => agentName(a)).join('、') }}</span>
+            <span v-else class="onto-bound-none">未绑定</span>
+          </div>
+          <div class="onto-actions" @click.stop>
+            <a-button size="small">📝 编辑</a-button>
+            <a-button size="small" danger>🗑 删除</a-button>
+            <a-button size="small">📤 导出</a-button>
+          </div>
+        </div>
+      </div>
+      <a-button type="dashed" block @click="showOntoModal" style="margin-top: 4px;">+ 创建本体</a-button>
+    </template>
     </div>
+  </div>
 
     <!-- DB Connection Modal -->
     <a-modal v-model:open="dbModalOpen" :title="editingDb ? '编辑数据库连接' : '🔗 连接数据库'" @ok="saveDb" @cancel="dbModalOpen = false" width="520px" ok-text="💾 保存" cancel-text="取消">
@@ -95,12 +129,19 @@
         </div>
       </a-form>
     </a-modal>
-  </div>
+
+    <!-- Ontology Modal -->
+    <a-modal v-model:open="ontoModalOpen" title="🧠 创建本体" @ok="createOntology" @cancel="ontoModalOpen = false" width="480px" ok-text="💾 创建" cancel-text="取消">
+      <a-form :model="ontoForm" layout="vertical">
+        <a-form-item label="本体名称"><a-input v-model:value="ontoForm.name" placeholder="如：税务核心本体" /></a-form-item>
+        <a-form-item label="描述"><a-textarea v-model:value="ontoForm.description" rows="3" placeholder="描述本体的用途和覆盖范围..." /></a-form-item>
+      </a-form>
+    </a-modal>
 </template>
 
 <script setup>
 import { ref, reactive } from 'vue'
-import { knowledgeCategories } from '../mockData.js'
+import { knowledgeCategories, ontologies } from '../mockData.js'
 
 const categories = knowledgeCategories
 const activeSrc = ref('file')
@@ -115,6 +156,8 @@ const dbConnections = ref([
 const dbModalOpen = ref(false)
 const editingDb = ref(null)
 const dbTestResult = reactive({ status: '', msg: '' })
+const ontoModalOpen = ref(false)
+const ontoForm = reactive({ name: '', description: '' })
 
 const dbForm = reactive({
   name: '', type: 'mysql', host: '', port: '3306', database: '', username: '', password: '',
@@ -152,6 +195,33 @@ function testDbForm() { dbTestResult.status = 'success'; dbTestResult.msg = '✅
 function testDb(db) { db.latency = Math.floor(Math.random() * 30 + 5) + 'ms'; db.status = 'connected' }
 
 function disconnectDb(i) { dbConnections.value[i].status = 'disconnected' }
+
+function showOntoModal() {
+  ontoForm.name = ''; ontoForm.description = ''; ontoModalOpen.value = true
+}
+
+function createOntology() {
+  if (!ontoForm.name) return
+  ontologies.unshift({
+    id: 'onto-' + Date.now(),
+    name: ontoForm.name,
+    description: ontoForm.description || '暂无描述',
+    icon: '🧠',
+    status: 'draft',
+    version: 1,
+    entityCount: 0,
+    propertyCount: 0,
+    relationCount: 0,
+    boundAgents: [],
+    createdAt: new Date().toISOString().slice(0, 10),
+    updatedAt: new Date().toISOString().slice(0, 10),
+  })
+  ontoModalOpen.value = false
+}
+
+function viewOntology(onto) {
+  // Phase 2: open entity editor
+}
 </script>
 
 <style scoped>
@@ -211,4 +281,22 @@ function disconnectDb(i) { dbConnections.value[i].status = 'disconnected' }
 .db-test-result { font-size: 12px; }
 .db-test-result.success { color: #52c41a; }
 .db-test-result.fail { color: #f5222d; }
+
+/* ===== 本体视图 ===== */
+.onto-list { display: flex; flex-direction: column; gap: 10px; }
+.onto-card { padding: 14px; border: 1px solid #e8e8e8; border-radius: 8px; background: #fff; cursor: pointer; transition: box-shadow 0.2s; }
+.onto-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.onto-card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.onto-icon { font-size: 20px; }
+.onto-name { font-size: 15px; font-weight: 600; color: #1a1a2e; flex: 1; }
+.onto-status { font-size: 11px; padding: 1px 6px; border-radius: 3px; }
+.onto-published { color: #52c41a; background: #f6ffed; }
+.onto-draft { color: #fa8c16; background: #fff7e6; }
+.onto-desc { font-size: 12px; color: #8c8c8c; margin-bottom: 4px; }
+.onto-meta { display: flex; gap: 12px; font-size: 11px; color: #8c8c8c; margin-bottom: 4px; }
+.onto-footer { display: flex; gap: 12px; font-size: 11px; align-items: center; margin-bottom: 10px; }
+.onto-date { color: #bfbfbf; }
+.onto-bound { color: #1677ff; }
+.onto-bound-none { color: #d9d9d9; }
+.onto-actions { display: flex; gap: 6px; }
 </style>

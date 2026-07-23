@@ -679,3 +679,50 @@ export const managedAgents = [
   { id: 'agent-declare',    icon: '📋', name: '申报管家',      status: 'paused',  description: '专注税务申报全流程管理',     style: 'professional', capabilities: ['cap-king', 'cap-gpt4o'],                knowledgeBases: ['kb-tax', 'kb-internal'], model: 'GPT-4o', temperature: 0.3, stats: { totalConversations: 42,  todayConversations: 0,  lastActiveAt: '2026-07-22T16:00:00' } },
   { id: 'agent-compliance', icon: '🔍', name: '稽查合规师',    status: 'online',  description: '专注税务稽查合规检查',       style: 'professional', capabilities: ['cap-claude4', 'cap-feishu'],                 knowledgeBases: [],               model: 'Claude 4', temperature: 0.3, stats: { totalConversations: 23,  todayConversations: 2,  lastActiveAt: '2026-07-23T10:00:00' } },
 ]
+
+
+// ==================== 工具系统 · 本体数据 ====================
+export const ontologies = [
+  {
+    id: 'onto-001',
+    name: '税务核心本体',
+    description: '涵盖发票、申报、公司等核心税务实体',
+    icon: '📦',
+    status: 'published',
+    version: 1,
+    entityCount: 5,
+    propertyCount: 19,
+    relationCount: 8,
+    boundAgents: ['agent-assistant', 'agent-certify'],
+    createdAt: '2026-07-20',
+    updatedAt: '2026-07-23',
+  },
+  {
+    id: 'onto-002',
+    name: '发票生命周期本体',
+    description: '从开具到认证到归档的全流程发票实体关系',
+    icon: '📄',
+    status: 'published',
+    version: 2,
+    entityCount: 3,
+    propertyCount: 8,
+    relationCount: 4,
+    boundAgents: [],
+    createdAt: '2026-07-18',
+    updatedAt: '2026-07-22',
+  },
+  {
+    id: 'onto-003',
+    name: '申报管理本体',
+    description: '申报流程中的实体关系定义',
+    icon: '📋',
+    status: 'draft',
+    version: 1,
+    entityCount: 2,
+    propertyCount: 5,
+    relationCount: 2,
+    boundAgents: [],
+    createdAt: '2026-07-21',
+    updatedAt: '2026-07-21',
+  },
+]
