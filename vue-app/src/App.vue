@@ -4,18 +4,20 @@
     <header class="app-header">
       <div class="header-left">
         <img :src="logoUrl" alt="云砾" class="logo-img" />
-        <div class="header-divider"></div>
-        <span class="logo-text">AI CFO · 智能税务合伙人</span>
-        <div class="header-client">
-          <span class="client-tag">凯德地产</span>
-        </div>
+      </div>
+      <div class="header-center">
+        <span class="header-title">AI CFO · 智能税务合伙人</span>
       </div>
       <div class="header-right">
-        <div class="header-user">
-          <span class="user-role">税务经理</span>
-          <span class="user-name">杨姐</span>
-          <span class="user-avatar">👩‍💼</span>
-        </div>
+        <span class="client-tag">凯德地产</span>
+        <div class="right-divider"></div>
+        <button class="icon-btn" title="客服">💬</button>
+        <button class="icon-btn" title="帮助文档">📖</button>
+        <a-badge :count="3" :offset="[-2, 2]" size="small">
+          <button class="icon-btn" title="通知">🔔</button>
+        </a-badge>
+        <div class="right-divider"></div>
+        <span class="user-name">杨姐</span>
       </div>
     </header>
 
@@ -109,38 +111,40 @@ function switchAgent(agent) {
 .app-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   height: 56px;
   background: #fff;
   border-bottom: 1px solid #e8e8e8;
   padding: 0 24px;
   flex-shrink: 0;
   z-index: 10;
+  position: relative;
 }
 .header-left {
   display: flex;
   align-items: center;
-  gap: 0;
+  flex-shrink: 0;
 }
 .logo-img {
   height: 26px;
 }
-.header-divider {
-  width: 1px;
-  height: 20px;
-  background: #e0e0e0;
-  margin: 0 16px;
+.header-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
 }
-.logo-text {
+.header-title {
   font-size: 15px;
   font-weight: 600;
   color: #1a1a2e;
   letter-spacing: 0.3px;
 }
-.header-client {
-  margin-left: 16px;
-  padding-left: 16px;
-  border-left: 1px solid #e0e0e0;
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  flex-shrink: 0;
 }
 .client-tag {
   font-size: 13px;
@@ -150,26 +154,30 @@ function switchAgent(agent) {
   border-radius: 4px;
   font-weight: 500;
 }
-.header-right {
-  display: flex;
-  align-items: center;
+.right-divider {
+  width: 1px;
+  height: 16px;
+  background: #e0e0e0;
+  margin: 0 4px;
 }
-.header-user {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  line-height: 1;
+  transition: background 0.15s;
 }
-.user-role {
-  font-size: 12px;
-  color: #8c8c8c;
+.icon-btn:hover {
+  background: #f0f0f0;
 }
 .user-name {
   font-size: 13px;
   font-weight: 500;
   color: #1a1a2e;
-}
-.user-avatar {
-  font-size: 20px;
+  margin-left: 4px;
 }
 
 /* ===== 主体区域 ===== */
