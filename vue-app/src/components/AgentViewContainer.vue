@@ -36,9 +36,9 @@
     <!-- View Area -->
     <div class="view-area">
       <AgentDashboard
-        v-if="activeTabId.startsWith('db-') && activeBiTab"
+        v-if="activeTabId.startsWith('db-') && activeBiDashboard"
         :key="'db-' + activeTabId"
-        :dashboard="dashboard"
+        :dashboard="activeBiDashboard"
         @action="onAction"
       />
       <TaskManager
@@ -71,7 +71,7 @@ import KnowledgeManager from './KnowledgeManager.vue'
 const props = defineProps({
   agentId: { type: String, required: true },
   dashTabs: { type: Object, required: true },
-  dashboard: { type: Object, required: true },
+  dashboards: { type: Object, default: () => ({}) },
   tasks: { type: Array, required: true },
   capabilities: { type: Object, required: true },
   knowledge: { type: Object, required: true }
@@ -79,9 +79,14 @@ const props = defineProps({
 
 const emit = defineEmits(['action'])
 
-// Ensure first BI dashboard is always named "默认看板"
+// Active BI dashboard data — pick the right one by activeTabId
+const activeBiDashboard = computed(() => {
+  return props.dashboards[activeTabId.value] || { kpiCards: [], sections: [] }
+})
+
+// Ensure first BI dashboard is always named — use existing or default
 function ensureFirstDashboard(tabs) {
-  if (tabs && tabs.length > 0) {
+  if (tabs && tabs.length > 0 && !tabs[0].name) {
     tabs[0].name = '默认看板'
   }
   return tabs
@@ -124,11 +129,6 @@ watch(activeTabId, (val) => {
   if (val && !ids.includes(val)) {
     activeTabId.value = (biDashboards.length > 0 && biDashboards[0].id) || null
   }
-})
-
-// Computed: the active BI tab object
-const activeBiTab = computed(() => {
-  return biDashboards.find(t => t.id === activeTabId.value)
 })
 
 // Check if a BI tab is the first (immutable one)

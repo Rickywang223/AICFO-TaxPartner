@@ -186,9 +186,124 @@
           </div>
         </div>
 
-      </div>
+        <!-- Type: deadline-countdown (认证截止倒计时) -->
+        <div v-if="sec.type === 'deadline-countdown'" class="section-body">
+          <div class="deadline-header">
+            <span class="deadline-date">本月截止：{{ sec.deadlineDate }}</span>
+            <span class="deadline-days" :class="sec.daysLeft <= 3 ? 'days-urgent' : sec.daysLeft <= 10 ? 'days-warn' : ''">{{ sec.daysLeft }}天</span>
+          </div>
+          <div class="deadline-bar">
+            <div class="deadline-bar-bg">
+              <div class="deadline-bar-fill" :style="{ width: Math.min(100, ((30 - sec.daysLeft) / 30) * 100) + '%' }"></div>
+              <span class="deadline-bar-today">今日</span>
+              <span class="deadline-bar-end">截止</span>
+            </div>
+          </div>
+          <div v-for="(item, idx) in sec.items" :key="idx" class="deadline-row" :class="'pri-' + item.priority">
+            <span class="deadline-priority">
+              <span v-if="item.priority === 'urgent'">🚨</span>
+              <span v-else-if="item.priority === 'warning'">⚠️</span>
+              <span v-else>📄</span>
+            </span>
+            <span class="deadline-company">{{ item.company }}</span>
+            <span class="deadline-amount">{{ item.amount }}</span>
+            <span class="deadline-suggest" :class="'sug-' + item.priority">{{ item.suggestDays }}</span>
+          </div>
+          <div v-if="sec.action" class="section-actions">
+            <a-button :type="sec.action.type === 'primary' ? 'primary' : 'default'" size="small" @click="$emit('action', sec.action)">{{ sec.action.text }}</a-button>
+          </div>
+        </div>
 
-      <!-- Region Chart (only for 杨姐的助理) -->
+        <!-- Type: cert-queue (认证队列) -->
+        <div v-if="sec.type === 'cert-queue'" class="section-body">
+          <div class="queue-table">
+            <div class="queue-row queue-header">
+              <span v-for="h in sec.headers" :key="h" class="queue-cell queue-hd">{{ h }}</span>
+            </div>
+            <div v-for="(item, idx) in sec.items" :key="idx" class="queue-row">
+              <span class="queue-cell">{{ item.company }}</span>
+              <span class="queue-cell">{{ item.amount }}</span>
+              <span class="queue-cell">
+                <a-tag :color="item.statusColor === 'processing' ? 'processing' : 'default'" size="small">{{ item.status }}</a-tag>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Type: trend-chart (认证率趋势) -->
+        <div v-if="sec.type === 'trend-chart'" class="section-body">
+          <div class="trend-summary">
+            <div class="trend-current">
+              <span class="trend-value">{{ sec.currentRate }}%</span>
+              <span class="trend-label">当前认证率</span>
+            </div>
+            <div class="trend-target">
+              <span class="trend-value target">{{ sec.targetRate }}%</span>
+              <span class="trend-label">目标线</span>
+            </div>
+            <div class="trend-gap" :class="sec.gap < 0 ? 'gap-negative' : ''">
+              <span class="trend-value">{{ sec.gap > 0 ? '+' : '' }}{{ sec.gap }}%</span>
+              <span class="trend-label">差距</span>
+            </div>
+          </div>
+          <div class="trend-chart">
+            <div v-for="(dp, idx) in sec.dataPoints" :key="idx" class="trend-bar-col">
+              <div class="trend-bar-bg">
+                <div class="trend-bar-fill" :style="{ height: dp.value + '%' }" :class="dp.value >= sec.targetRate ? 'fill-good' : 'fill-warn'"></div>
+              </div>
+              <span class="trend-bar-label">{{ dp.value }}%</span>
+              <span class="trend-bar-name">{{ dp.label }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Type: region-chart (区域认证率分布) -->
+        <div v-if="sec.type === 'region-chart'" class="section-body">
+          <div v-for="(reg, idx) in sec.regions" :key="idx" class="region-row">
+            <div class="region-name">{{ reg.name }}</div>
+            <div class="region-bar-wrap">
+              <div class="region-bar-bg">
+                <div class="region-bar-fill" :class="'bar-' + reg.color" :style="{ width: reg.rate + '%' }"></div>
+              </div>
+              <span class="region-rate">{{ reg.rate }}%</span>
+              <span v-if="reg.note" class="region-change change-urgent">{{ reg.note }}</span>
+            </div>
+          </div>
+          <div v-if="sec.actions" class="section-actions">
+            <a-button v-for="(act, aidx) in sec.actions" :key="aidx" :type="act.type === 'primary' ? 'primary' : 'default'" size="small" class="section-action-btn" @click="$emit('action', act)">{{ act.text }}</a-button>
+          </div>
+        </div>
+
+        <!-- Type: alert-list (异常预警) -->
+        <div v-if="sec.type === 'alert-list'" class="section-body">
+          <div v-for="(item, idx) in sec.items" :key="idx" class="alert-row" :class="'alert-' + item.level">
+            <span class="alert-icon">
+              <span v-if="item.level === 'error'">🚨</span>
+              <span v-else-if="item.level === 'warning'">⚠️</span>
+              <span v-else>💡</span>
+            </span>
+            <span class="alert-text">{{ item.text }}</span>
+            <span class="alert-time">{{ item.time }}</span>
+          </div>
+        </div>
+
+        <!-- Type: efficiency-table (认证效率统计) -->
+        <div v-if="sec.type === 'efficiency-table'" class="section-body">
+          <div class="eff-table">
+            <div class="eff-row eff-header">
+              <span v-for="h in sec.headers" :key="h" class="eff-cell">{{ h }}</span>
+            </div>
+            <div v-for="(row, idx) in sec.rows" :key="idx" class="eff-row">
+              <span class="eff-cell eff-label">{{ row.label }}</span>
+              <span class="eff-cell eff-value">{{ row.current }}</span>
+              <span class="eff-cell eff-change" :class="row.trend === 'up' ? 'change-up' : 'change-down'">{{ row.change }}</span>
+            </div>
+          </div>
+          <div v-if="sec.actions" class="section-actions">
+            <a-button v-for="(act, aidx) in sec.actions" :key="aidx" :type="act.type === 'primary' ? 'primary' : 'default'" size="small" class="section-action-btn" @click="$emit('action', act)">{{ act.text }}</a-button>
+          </div>
+        </div>
+      </div>
       <div v-if="dashboard.regionChart" class="section-card">
         <div class="section-title">{{ dashboard.regionChart.title }}</div>
         <div class="section-body">

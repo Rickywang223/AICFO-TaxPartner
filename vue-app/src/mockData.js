@@ -8,7 +8,7 @@ export const agents = [
   { id: 'agent-assistant',  icon: '👩‍💼', name: '杨姐的助理',  status: 'urgent',  badge: '3项紧急', summary: '今天有3件事需要处理', pendingCount: 0, lastActive: '刚刚',    description: '你的专属税务工作助手',
     dashTabs: { biDashboards: [{ id: 'db-1', name: '默认看板', type: 'bi' }], fixedTabs: [{ id: 'tasks', name: '任务管理', type: 'tasks' }, { id: 'capability', name: '能力管理', type: 'capability' }, { id: 'knowledge', name: '知识库', type: 'knowledge' }] } },
   { id: 'agent-certify',   icon: '📄', name: '发票认证专员', status: 'warning', badge: '45%完成', summary: '还剩23张待认证', pendingCount: 23, lastActive: '11:30',  description: '专门负责发票认证的智能体',
-    dashTabs: { biDashboards: [{ id: 'db-1', name: '默认看板', type: 'bi' }], fixedTabs: [{ id: 'tasks', name: '任务管理', type: 'tasks' }, { id: 'capability', name: '能力管理', type: 'capability' }, { id: 'knowledge', name: '知识库', type: 'knowledge' }] } },
+    dashTabs: { biDashboards: [{ id: 'db-1', name: '今日工作台', type: 'bi' }, { id: 'db-2', name: '认证分析', type: 'bi' }], fixedTabs: [{ id: 'tasks', name: '任务管理', type: 'tasks' }, { id: 'capability', name: '能力管理', type: 'capability' }, { id: 'knowledge', name: '知识库', type: 'knowledge' }] } },
   { id: 'agent-risk',      icon: '⚠️', name: '风险预警官',   status: 'urgent',  badge: '2家高危', summary: '新增1家风险公司', pendingCount: 2, lastActive: '09:15',  description: '7×24小时监控企业税务风险',
     dashTabs: { biDashboards: [{ id: 'db-1', name: '默认看板', type: 'bi' }], fixedTabs: [{ id: 'tasks', name: '任务管理', type: 'tasks' }, { id: 'capability', name: '能力管理', type: 'capability' }, { id: 'knowledge', name: '知识库', type: 'knowledge' }] } },
   { id: 'agent-declare',   icon: '📋', name: '申报管家',     status: 'normal',  badge: '96%完成', summary: '距截止还有12天', pendingCount: 0, lastActive: '昨天',   description: '自动跟踪各税种申报进度',
@@ -46,174 +46,220 @@ export const cockpitData = {
 }
 
 // ==================== 各智能体 Dashboard 数据 ====================
-export const agentDashboards = {
+// 每个智能体可多个 BI 看板，keyed by BI tab ID
+export const agentDashboardData = {
 
   // ----- 杨姐的助理 -----
   'agent-assistant': {
-    kpiCards: [
-      { id: 'cert-rate',    label: '认证率',      value: '77%',  valueFull: '77/100张', trend: 'up',   change: '+2%',    status: 'warning' },
-      { id: 'risk-count',   label: '风险数',      value: '2家',  valueFull: '2家高危公司',           trend: 'down',  change: '-1家',   status: 'urgent'  },
-      { id: 'declare-rate', label: '申报进度',    value: '96.2%', valueFull: '23/24家完成',           trend: 'up',   change: '+0.5%',   status: 'normal'  },
-      { id: 'tax-rate',     label: '本月税负',    value: '2.8%', valueFull: '增值税税负率',           trend: 'up',   change: '+0.1%',   status: 'normal'  },
-    ],
-    sections: [
-      {
-        id: 'danger-invoices',
-        tab: '总览',
-        title: '🔥 高危发票（3张待处理）',
-        type: 'invoice-list',
-        items: [
-          { company: '苏宁电器',       amount: '¥456,000', urgency: 'critical', daysLeft: 3,  note: '仅剩3天' },
-          { company: '雪峰致远科技',   amount: '¥12,300',  urgency: 'warning',  daysLeft: 7,  note: '7天到期' },
-          { company: '华中第1分公司',  amount: '¥1,200',   urgency: 'warning',  daysLeft: 7,  note: '7天到期' },
-        ],
-        actions: [
-          { text: '一键全部认证', type: 'primary', action: 'batch-certify' },
-          { text: '查看明细',    type: 'default', action: 'view-invoice-detail' },
-        ]
-      },
-      {
-        id: 'today-tasks',
-        title: '📋 今日待办（5项）',
-        type: 'task-list',
-        items: [
-          { label: '月度申报截止 7/25',         urgent: true,  note: '剩余2天' },
-          { label: '华东区认证率仅 41.4%',      urgent: true,  note: '远低于全国平均' },
-          { label: '华中第1分公司发票对账',     urgent: false, note: '待处理' },
-          { label: '增值税申报表核对',           urgent: false, note: '例行工作' },
-          { label: '新供应商税务资质审核',      urgent: false, note: '3家待审' },
-        ],
-      }
-    ],
-    regionChart: {
-      title: '区域认证排行',
-      data: [
-        { region: '华北', rate: 88, change: '+2%',  status: 'normal' },
-        { region: '华南', rate: 82, change: '0%',   status: 'normal' },
-        { region: '华东', rate: 41, change: '-35%', status: 'urgent' },
-        { region: '华中', rate: 45, change: '-26%', status: 'urgent' },
-      ]
-    }
+    'db-1': {
+      kpiCards: [
+        { id: 'cert-rate',    label: '认证率',      value: '77%',  valueFull: '77/100张', trend: 'up',   change: '+2%',    status: 'warning' },
+        { id: 'risk-count',   label: '风险数',      value: '2家',  valueFull: '2家高危公司',           trend: 'down',  change: '-1家',   status: 'urgent'  },
+        { id: 'declare-rate', label: '申报进度',    value: '96.2%', valueFull: '23/24家完成',           trend: 'up',   change: '+0.5%',   status: 'normal'  },
+        { id: 'tax-rate',     label: '本月税负',    value: '2.8%', valueFull: '增值税税负率',           trend: 'up',   change: '+0.1%',   status: 'normal'  },
+      ],
+      sections: [
+        { id: 'danger-invoices', title: '🔥 高危发票（3张待处理）', type: 'invoice-list',
+          items: [
+            { company: '苏宁电器',       amount: '¥456,000', urgency: 'critical', daysLeft: 3,  deadline: '2026-07-26', note: '仅剩3天' },
+            { company: '雪峰致远科技',   amount: '¥12,300',  urgency: 'warning',  daysLeft: 7,  deadline: '2026-07-30', note: '7天到期' },
+            { company: '华中第1分公司',  amount: '¥1,200',   urgency: 'warning',  daysLeft: 7,  deadline: '2026-07-30', note: '7天到期' },
+          ],
+          actions: [
+            { text: '一键全部认证', type: 'primary', action: 'batch-certify' },
+            { text: '查看明细',    type: 'default', action: 'view-invoice-detail' },
+          ]
+        },
+        { id: 'today-tasks', title: '📋 今日待办（5项）', type: 'task-list',
+          items: [
+            { text: '整理本月进项发票',   status: 'in_progress' },
+            { text: '审核华东区报销单',   status: 'pending' },
+            { text: '更新供应商税号',     status: 'pending' },
+            { text: '完成月度税务报告',   status: 'completed' },
+            { text: '沟通Q3税务筹划',     status: 'pending' },
+          ],
+        },
+      ],
+    },
   },
 
   // ----- 发票认证专员 -----
   'agent-certify': {
-    kpiCards: [
-      { id: 'today-progress', label: '今日认证',     value: '77%',  valueFull: '77/100张',     trend: 'up',   change: '+5张',  status: 'warning' },
-      { id: 'pending-count',  label: '待认证',       value: '23张', valueFull: '其中高危3张',   trend: 'down', change: '-12张', status: 'urgent'  },
-      { id: 'month-progress', label: '本月目标',     value: '82%',  valueFull: '已完成820/1000张', trend: 'up', change: '+3%',   status: 'normal'  },
-      { id: 'avg-time',       label: '平均认证耗时', value: '2.3h', valueFull: '从开票到认证',   trend: 'down', change: '-0.5h',  status: 'normal'  },
-    ],
-    sections: [
-      {
-        id: 'certify-queue',
-        title: '📄 认证队列',
-        type: 'dual-list',
-        columns: [
-          {
-            title: '🔥 高危（3张）',
-            items: [
-              { company: '苏宁电器',       amount: '¥456,000', daysLeft: 3 },
-              { company: '雪峰致远科技',   amount: '¥12,300',  daysLeft: 7 },
-              { company: '华中第1分公司',  amount: '¥1,200',   daysLeft: 7 },
-            ]
-          },
-          {
-            title: '📋 普通（20张）',
-            items: [
-              { company: '华北配送中心',   amount: '¥23,000' },
-              { company: '华南供应链',     amount: '¥18,500' },
-              { company: '华东物流公司',   amount: '¥9,800' },
-              { company: '其他 17 张...',   amount: '—' },
-            ]
-          }
-        ],
-        actions: [
-          { text: '一键认证高危', type: 'primary', action: 'certify-danger' },
-          { text: '批量认证',    type: 'default', action: 'batch-certify' },
-          { text: '导出清单',    type: 'default', action: 'export' },
-        ]
-      }
-    ]
+    // ⭐ 看板一：今日工作台（默认）
+    'db-1': {
+      name: '今日工作台',
+      kpiCards: [
+        { id: 'pending-cert',  label: '待认证',      value: '23张',  valueFull: '23张待认证',         trend: 'up',   change: '+3张',   status: 'urgent'  },
+        { id: 'cert-rate',     label: '认证率',      value: '77%',   valueFull: '77/100张已完成',      trend: 'up',   change: '+2%',    status: 'warning' },
+        { id: 'high-risk',     label: '高风险',      value: '3张',   valueFull: '3张高危发票',         trend: 'down', change: '-1张',   status: 'urgent'  },
+        { id: 'done-today',    label: '今日已认证',  value: '12张',  valueFull: '今日已认证12张',      trend: 'up',   change: '+5张',   status: 'normal'  },
+      ],
+      sections: [
+        { id: 'deadline', title: '📅 认证截止倒计时', type: 'deadline-countdown',
+          deadlineDate: '2026-07-28',
+          deadlineLabel: '本月认证截止日',
+          daysLeft: 5,
+          items: [
+            { company: '苏宁电器',     amount: '¥456,000', priority: 'urgent',   suggestDays: '今天！' },
+            { company: '雪峰致远科技', amount: '¥12,300',  priority: 'warning',  suggestDays: '明天' },
+            { company: '华中第1分公司', amount: '¥1,200',   priority: 'normal',   suggestDays: '本周内' },
+            { company: '华东区汇总发票', amount: '¥89,000',  priority: 'normal',   suggestDays: '本周内' },
+            { company: '华南区进项发票', amount: '¥210,000', priority: 'normal',   suggestDays: '本周内' },
+          ],
+          action: { text: '查看全部待认证', type: 'primary', action: 'view-queue' },
+        },
+        { id: 'pending-list', title: '🔥 待处理（按紧急度）', type: 'invoice-list',
+          items: [
+            { company: '苏宁电器',       amount: '¥456,000', urgency: 'critical', daysLeft: 3,  deadline: '2026-07-26', note: '仅剩3天' },
+            { company: '雪峰致远科技',   amount: '¥12,300',  urgency: 'warning',  daysLeft: 7,  deadline: '2026-07-30', note: '7天到期' },
+            { company: '华中第1分公司',  amount: '¥1,200',   urgency: 'warning',  daysLeft: 7,  deadline: '2026-07-30', note: '7天到期' },
+          ],
+          actions: [
+            { text: '一键认证高危', type: 'primary', action: 'certify-danger' },
+            { text: '批量认证',    type: 'default', action: 'batch-certify' },
+          ],
+        },
+        { id: 'today-tasks', title: '📋 今日待办', type: 'task-list',
+          items: [
+            { text: '认证华东区高危发票', status: 'in_progress' },
+            { text: '批量认证普通发票',    status: 'pending' },
+            { text: '导出认证清单',       status: 'pending' },
+          ],
+        },
+        { id: 'cert-queue', title: '📊 实时认证队列', type: 'cert-queue',
+          headers: ['公司', '金额', '状态'],
+          items: [
+            { company: '苏宁电器',     amount: '¥456,000', status: '排队中', statusColor: 'default' },
+            { company: '雪峰致远科技', amount: '¥12,300',  status: '认证中', statusColor: 'processing' },
+            { company: '华中第1分公司', amount: '¥1,200',   status: '排队中', statusColor: 'default' },
+          ],
+        },
+      ],
+    },
+    // ⭐ 看板二：认证分析
+    'db-2': {
+      name: '认证分析',
+      sections: [
+        { id: 'trend', title: '📈 认证率趋势（近30天）', type: 'trend-chart',
+          currentRate: 77,
+          targetRate: 85,
+          gap: -8,
+          dataPoints: [
+            { label: '第1周', value: 72 },
+            { label: '第2周', value: 75 },
+            { label: '第3周', value: 73 },
+            { label: '第4周', value: 77 },
+          ],
+        },
+        { id: 'region', title: '🗺️ 区域认证率分布', type: 'region-chart',
+          regions: [
+            { name: '华东区', rate: 76, color: 'normal' },
+            { name: '华南区', rate: 92, color: 'normal' },
+            { name: '华中区', rate: 65, color: 'urgent', note: '↓ 连续3天下降' },
+            { name: '华北区', rate: 88, color: 'normal' },
+            { name: '西南区', rate: 95, color: 'normal' },
+          ],
+          actions: [
+            { text: '查看华中区明细', type: 'default', action: 'view-detail' },
+          ],
+        },
+        { id: 'alerts', title: '⚠️ 异常预警', type: 'alert-list',
+          items: [
+            { level: 'error',   text: '华中区认证率连续3天下降',     time: '今日' },
+            { level: 'warning', text: '雪峰致远发票税率异常（13%→6%）', time: '昨日' },
+            { level: 'info',    text: '本月认证截止日还剩5天',         time: '今日' },
+          ],
+        },
+        { id: 'efficiency', title: '📊 认证效率统计', type: 'efficiency-table',
+          headers: ['指标', '本周', '环比'],
+          rows: [
+            { label: '平均认证时长', current: '2.3min', change: '-0.5min', trend: 'up' },
+            { label: '单日最高',     current: '156张',  change: '+23张',   trend: 'up' },
+            { label: '自动认证率',   current: '68%',    change: '+5%',     trend: 'up' },
+          ],
+          actions: [
+            { text: '导出分析报告', type: 'primary', action: 'export' },
+            { text: '查看明细',     type: 'default', action: 'view-detail' },
+          ],
+        },
+      ],
+    },
   },
 
   // ----- 风险预警官 -----
   'agent-risk': {
-    kpiCards: [
-      { id: 'high-risk',     label: '高危公司',     value: '2家', valueFull: '风险评分<60', trend: 'down', change: '+1家', status: 'urgent' },
-      { id: 'medium-risk',   label: '中危公司',     value: '7家', valueFull: '风险评分60-75', trend: 'down', change: '+2家', status: 'warning' },
-      { id: 'risk-trend',    label: '风险趋势',     value: '↑12%', valueFull: '较上月上升', trend: 'up',   change: '+12%', status: 'urgent' },
-      { id: 'safe-count',    label: '安全公司',     value: '67家', valueFull: '评分>75',    trend: 'up',   change: '+3家', status: 'normal' },
-    ],
-    sections: [
-      {
-        id: 'risk-heatmap',
-        title: '⚠️ 高风险公司',
-        type: 'risk-list',
-        items: [
-          { company: '苏宁电器', riskScore: 58, status: 'critical', issue: '发票连续逾期3次', trend: 'up' },
-          { company: '雪峰致远科技', riskScore: 62, status: 'warning', issue: '税负率异常偏低', trend: 'up' },
-        ],
-        actions: [
-          { text: '风险排查', type: 'primary', action: 'risk-check' },
-          { text: '生成报告', type: 'default', action: 'gen-report' },
-        ]
-      }
-    ]
+    'db-1': {
+      kpiCards: [
+        { id: 'high-risk',     label: '高危公司',     value: '2家', valueFull: '风险评分<60', trend: 'down', change: '+1家', status: 'urgent' },
+        { id: 'medium-risk',   label: '中危公司',     value: '7家', valueFull: '风险评分60-75', trend: 'down', change: '+2家', status: 'warning' },
+        { id: 'risk-trend',    label: '风险趋势',     value: '↑12%', valueFull: '较上月上升', trend: 'up',   change: '+12%', status: 'urgent' },
+        { id: 'safe-count',    label: '安全公司',     value: '67家', valueFull: '评分>75',    trend: 'up',   change: '+3家', status: 'normal' },
+      ],
+      sections: [
+        { id: 'risk-heatmap', title: '⚠️ 高风险公司', type: 'risk-list',
+          items: [
+            { company: '苏宁电器', riskScore: 58, status: 'critical', issue: '发票连续逾期3次', trend: 'up' },
+            { company: '雪峰致远科技', riskScore: 62, status: 'warning', issue: '税负率异常偏低', trend: 'up' },
+          ],
+          actions: [
+            { text: '风险排查', type: 'primary', action: 'risk-check' },
+            { text: '生成报告', type: 'default', action: 'gen-report' },
+          ]
+        },
+      ],
+    },
   },
 
   // ----- 申报管家 -----
   'agent-declare': {
-    kpiCards: [
-      { id: 'completed',     label: '已完成',     value: '23家', valueFull: '共24家', trend: 'up',   change: '+1家', status: 'normal' },
-      { id: 'pending',       label: '未申报',     value: '1家',  valueFull: '华中第1分公司', trend: 'down', change: '—',    status: 'warning' },
-      { id: 'deadline',      label: '距截止日',   value: '12天', valueFull: '下次申报截止8/15', trend: 'down', change: '—', status: 'normal' },
-      { id: 'on-time-rate',  label: '准时率',     value: '99.3%', valueFull: '全年申报准时率', trend: 'up', change: '+0.1%', status: 'normal' },
-    ],
-    sections: [
-      {
-        id: 'tax-progress',
-        title: '📊 各税种申报进度',
-        type: 'tax-table',
-        columns: ['税种', '应报', '已报', '完成率', '状态'],
-        rows: [
-          { tax: '增值税',       total: 24, done: 24, rate: 100, status: 'done' },
-          { tax: '企业所得税',   total: 24, done: 23, rate: 95.8, status: 'pending' },
-          { tax: '印花税',       total: 24, done: 24, rate: 100, status: 'done' },
-          { tax: '房产税',       total: 24, done: 22, rate: 91.7, status: 'pending' },
-        ],
-        actions: [
-          { text: '催报未申报公司', type: 'primary', action: 'urge' },
-          { text: '导出申报汇总',  type: 'default', action: 'export' },
-        ]
-      }
-    ]
+    'db-1': {
+      kpiCards: [
+        { id: 'completed',     label: '已完成',     value: '23家', valueFull: '共24家', trend: 'up',   change: '+1家', status: 'normal' },
+        { id: 'pending',       label: '未申报',     value: '1家',  valueFull: '华中第1分公司', trend: 'down', change: '—',    status: 'warning' },
+        { id: 'deadline',      label: '距截止日',   value: '12天', valueFull: '下次申报截止8/15', trend: 'down', change: '—', status: 'normal' },
+        { id: 'on-time-rate',  label: '准时率',     value: '99.3%', valueFull: '全年申报准时率', trend: 'up', change: '+0.1%', status: 'normal' },
+      ],
+      sections: [
+        { id: 'tax-progress', title: '📊 各税种申报进度', type: 'tax-table',
+          columns: ['税种', '应报', '已报', '完成率', '状态'],
+          rows: [
+            { tax: '增值税',       total: 24, done: 24, rate: 100, status: 'done' },
+            { tax: '企业所得税',   total: 24, done: 23, rate: 95.8, status: 'pending' },
+            { tax: '印花税',       total: 24, done: 24, rate: 100, status: 'done' },
+            { tax: '房产税',       total: 24, done: 22, rate: 91.7, status: 'pending' },
+          ],
+          actions: [
+            { text: '催报未申报公司', type: 'primary', action: 'urge' },
+            { text: '导出申报汇总',  type: 'default', action: 'export' },
+          ]
+        },
+      ],
+    },
   },
 
   // ----- 稽查合规师 -----
   'agent-compliance': {
-    kpiCards: [
-      { id: 'health-score',   label: '健康评分',   value: '92分', valueFull: '较上月+1分', trend: 'up',   change: '+1分', status: 'normal' },
-      { id: 'risk-items',     label: '检查项',     value: '3项',  valueFull: '需整改2项',   trend: 'down', change: '+1项', status: 'warning' },
-      { id: 'tax-burden',     label: '税负率',     value: '1.78%', valueFull: '增值税税负率',  trend: 'down', change: '-0.05%', status: 'normal' },
-      { id: 'inspections',    label: '在查案件',   value: '0件',  valueFull: '无在查税务案件', trend: 'flat', change: '—', status: 'normal' },
-    ],
-    sections: [
-      {
-        id: 'compliance-checks',
-        title: '🔍 合规检查项',
-        type: 'checklist',
-        items: [
-          { check: '发票认证及时性',   status: 'pass',   detail: '本月认证率82%，符合要求' },
-          { check: '申报数据一致性',   status: 'warn',   detail: '华中第1分公司增值税申报数据异常' },
-          { check: '税负率健康度',     status: 'pass',   detail: '增值税税负率2.8%，在合理区间' },
-        ],
-        actions: [
-          { text: '开始合规检查', type: 'primary', action: 'start-check' },
-          { text: '生成报告',    type: 'default', action: 'gen-report' },
-        ]
-      }
-    ]
+    'db-1': {
+      kpiCards: [
+        { id: 'health-score',   label: '健康评分',   value: '92分', valueFull: '较上月+1分', trend: 'up',   change: '+1分', status: 'normal' },
+        { id: 'risk-items',     label: '检查项',     value: '3项',  valueFull: '需整改2项',   trend: 'down', change: '+1项', status: 'warning' },
+        { id: 'tax-burden',     label: '税负率',     value: '1.78%', valueFull: '增值税税负率',  trend: 'down', change: '-0.05%', status: 'normal' },
+        { id: 'inspections',    label: '在查案件',   value: '0件',  valueFull: '无在查税务案件', trend: 'flat', change: '—', status: 'normal' },
+      ],
+      sections: [
+        { id: 'compliance-checks', title: '🔍 合规检查项', type: 'checklist',
+          items: [
+            { check: '发票认证及时性',   status: 'pass',   detail: '本月认证率82%，符合要求' },
+            { check: '申报数据一致性',   status: 'warn',   detail: '华中第1分公司增值税申报数据异常' },
+            { check: '税负率健康度',     status: 'pass',   detail: '增值税税负率2.8%，在合理区间' },
+          ],
+          actions: [
+            { text: '开始合规检查', type: 'primary', action: 'start-check' },
+            { text: '生成报告',    type: 'default', action: 'gen-report' },
+          ]
+        },
+      ],
+    },
   },
 }
 

@@ -33,7 +33,7 @@
           <AgentViewContainer
             :agent-id="agentId"
             :dash-tabs="currentAgent.dashTabs"
-            :dashboard="currentDashboard"
+            :dashboards="allDashboards"
             :tasks="currentTasks"
             :capabilities="currentCapabilities"
             :knowledge="currentKnowledge"
@@ -52,7 +52,7 @@ import ChatPanel from './ChatPanel.vue'
 import AgentViewContainer from './AgentViewContainer.vue'
 import {
   agents,
-  agentDashboards,
+  agentDashboardData,
   agentTasks,
   agentCapabilities,
   agentKnowledge,
@@ -68,8 +68,8 @@ const currentAgent = computed(() => {
   return agents.find(a => a.id === agentId.value) || agents[0]
 })
 
-const currentDashboard = computed(() => {
-  return agentDashboards[agentId.value] || agentDashboards['agent-assistant']
+const allDashboards = computed(() => {
+  return agentDashboardData[agentId.value] || {}
 })
 
 const currentTasks = computed(() => {
