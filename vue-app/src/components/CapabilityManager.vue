@@ -1,326 +1,136 @@
 <template>
   <div class="capability-manager">
-    <!-- Section 1: MCP 服务 -->
+    <!-- Section 1: 已绑定能力 -->
     <div class="section-header">
-      <h3 class="section-title">MCP 服务</h3>
-      <span v-if="capabilities.mcps?.length" class="section-count">{{ capabilities.mcps.length }} 个服务</span>
+      <h3 class="section-title">🔌 已绑定能力</h3>
+      <span v-if="boundCapabilities.length" class="section-count">{{ boundCapabilities.length }} 个</span>
     </div>
 
-    <div v-if="capabilities.mcps?.length" class="mcp-grid">
-      <div
-        v-for="mcp in capabilities.mcps"
-        :key="mcp.id"
-        class="mcp-card"
-      >
-        <div class="mcp-card-top">
-          <div class="mcp-name-row">
-            <span class="mcp-status-dot" :class="'dot-' + mcp.status" :title="statusLabel(mcp.status)"></span>
-            <span class="mcp-name">{{ mcp.name }}</span>
-          </div>
-          <a-tag :color="typeColor(mcp.type)" class="mcp-type-tag">{{ typeLabel(mcp.type) }}</a-tag>
-        </div>
-
-        <div class="mcp-meta">
-          <div class="mcp-meta-item">
-            <span class="mcp-meta-label">Endp.</span>
-            <span class="mcp-meta-value" :title="mcp.endpoint">{{ truncate(mcp.endpoint, 36) }}</span>
-          </div>
-          <div class="mcp-meta-item">
-            <span class="mcp-meta-label">最后活跃</span>
-            <span class="mcp-meta-value">{{ mcp.lastActive || '--' }}</span>
+    <div v-if="boundCapabilities.length" class="cap-grid">
+      <div v-for="cap in boundCapabilities" :key="cap.id" class="cap-card">
+        <div class="cap-card-top">
+          <div class="cap-name-row">
+            <span class="cap-icon">{{ cap.icon || '🔌' }}</span>
+            <span class="cap-name">{{ cap.name }}</span>
+            <span class="cap-type-tag" :class="'type-' + cap.category">{{ cap.category === 'mcp' ? 'MCP' : cap.category === 'model' ? '模型' : '通道' }}</span>
           </div>
         </div>
-
-        <p v-if="mcp.description" class="mcp-desc">{{ mcp.description }}</p>
-
-        <div class="mcp-card-actions">
-          <a-button size="small" class="mcp-test-btn" @click="$emit('action', { type: 'test-connection', mcpId: mcp.id, name: mcp.name })">
-            测试连接
-          </a-button>
+        <p class="cap-desc">{{ cap.description }}</p>
+        <div class="cap-meta-row">
+          <span v-if="cap.endpoint" class="cap-endpoint">🔗 {{ truncate(cap.endpoint, 30) }}</span>
+          <span v-else-if="cap.modelVersion" class="cap-model">🧠 {{ cap.modelVersion }}</span>
+          <span v-if="cap.lastActive" class="cap-active">⏱ {{ cap.lastActive }}</span>
+        </div>
+        <div class="cap-card-actions">
+          <a-tag v-if="cap.connectionStatus === 'connected'" color="green">🟢 已连接</a-tag>
+          <a-tag v-else-if="cap.connectionStatus === 'disconnected'" color="default">🔴 未连接</a-tag>
+          <a-button v-if="cap.type === 'connection'" size="small" class="cap-test-btn" @click="testConnection(cap)" :loading="testingId === cap.id">测试连接</a-button>
         </div>
       </div>
     </div>
-
-    <a-empty v-else description="暂无 MCP 服务" :image="aEmpty.PRESENTED_IMAGE_SIMPLE" style="margin: 32px 0;" />
+    <a-empty v-else description="暂未绑定能力，请到能力中心配置" :image="aEmpty.PRESENTED_IMAGE_SIMPLE" style="margin: 24px 0;" />
 
     <!-- Section 2: 大模型配置 -->
-    <div class="section-header" style="margin-top: 24px;">
-      <h3 class="section-title">大模型配置</h3>
+    <div class="section-header" style="margin-top: 20px;">
+      <h3 class="section-title">🧠 大模型配置</h3>
     </div>
 
-    <template v-if="hasLLM">
+    <template v-if="currentLLM">
       <div class="llm-card">
         <div class="llm-card-row">
           <div class="llm-name-row">
-            <span class="llm-icon">🧠</span>
-            <span class="llm-name">{{ capabilities.llm.provider }} / {{ capabilities.llm.model }}</span>
+            <span class="llm-icon">🤖</span>
+            <span class="llm-name">{{ currentLLM.name || (currentLLM.provider + ' / ' + currentLLM.model) }}</span>
           </div>
-          <a-tag v-if="capabilities.llm.status === 'active'" color="green" class="llm-status-badge">已激活</a-tag>
-          <a-tag v-else color="default" class="llm-status-badge">{{ capabilities.llm.status || '未知' }}</a-tag>
+          <a-tag color="green">已激活</a-tag>
         </div>
-
         <div class="llm-details">
-          <div class="llm-detail-item">
-            <span class="llm-detail-label">Temperature</span>
-            <span class="llm-detail-badge">{{ capabilities.llm.temperature ?? '--' }}</span>
-          </div>
-          <div class="llm-detail-item">
-            <span class="llm-detail-label">Max Tokens</span>
-            <span class="llm-detail-value">{{ capabilities.llm.maxTokens ?? '--' }}</span>
-          </div>
+          <div class="llm-detail-item"><span class="llm-detail-label">供应商</span><span class="llm-detail-badge">{{ currentLLM.modelProvider || currentLLM.provider }}</span></div>
+          <div class="llm-detail-item"><span class="llm-detail-label">模型</span><span class="llm-detail-value">{{ currentLLM.modelVersion || currentLLM.model }}</span></div>
+          <div class="llm-detail-item"><span class="llm-detail-label">Temperature</span><span class="llm-detail-badge">{{ currentLLM.temperature ?? '--' }}</span></div>
+          <div class="llm-detail-item"><span class="llm-detail-label">Max Tokens</span><span class="llm-detail-value">{{ currentLLM.maxTokens ?? '--' }}</span></div>
         </div>
       </div>
     </template>
-
-    <a-empty v-else description="暂无大模型配置" :image="aEmpty.PRESENTED_IMAGE_SIMPLE" style="margin: 32px 0;" />
+    <a-empty v-else description="未配置大模型" :image="aEmpty.PRESENTED_IMAGE_SIMPLE" style="margin: 24px 0;" />
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { Empty as aEmpty } from 'ant-design-vue'
+import { ref, computed } from 'vue'
+import { Empty as aEmpty, message } from 'ant-design-vue'
+import { capabilities, agentCapabilities } from '../mockData.js'
 
-const props = defineProps({
-  capabilities: {
-    type: Object,
-    default: () => ({ mcps: [], llm: {} }),
-  },
+const props = defineProps({ capabilities: { type: Object, default: () => ({ mcps: [], llm: {} }) }, agentId: { type: String } })
+const emit = defineEmits(['action'])
+const testingId = ref(null)
+
+// Resolve bound capabilities from full capability list
+const agentCapIds = computed(() => {
+  if (props.agentId && agentCapabilities[props.agentId]) {
+    const ac = agentCapabilities[props.agentId]
+    return ac.mcps?.map(m => m.id) || []
+  }
+  return []
 })
 
-defineEmits(['action'])
-
-const hasLLM = computed(() => {
-  return props.capabilities.llm && (props.capabilities.llm.provider || props.capabilities.llm.model)
+const boundCapabilities = computed(() => {
+  const ids = agentCapIds.value
+  if (!ids.length) return props.capabilities.mcps || []
+  return capabilities.filter(c => ids.includes(c.id))
 })
 
-function typeColor(type) {
-  return { database: 'cyan', api: 'blue', tool: 'purple' }[type] || 'default'
+const currentLLM = computed(() => {
+  if (props.capabilities.llm?.provider) return props.capabilities.llm
+  if (props.agentId && agentCapabilities[props.agentId]?.llm) return agentCapabilities[props.agentId].llm
+  const llm = capabilities.find(c => c.category === 'model' && c.status === 'enabled')
+  return llm || null
+})
+
+async function testConnection(cap) {
+  testingId.value = cap.id
+  message.loading({ content: `正在测试 ${cap.name}...`, key: 'test-' + cap.id, duration: 0 })
+  await new Promise(r => setTimeout(r, 1500))
+  cap.connectionStatus = Math.random() > 0.2 ? 'connected' : 'disconnected'
+  message.success({ content: cap.connectionStatus === 'connected' ? `✅ ${cap.name} 连接成功` : `❌ ${cap.name} 连接失败`, key: 'test-' + cap.id, duration: 3 })
+  testingId.value = null
 }
 
-function typeLabel(type) {
-  return { database: '数据库', api: 'API', tool: '工具' }[type] || type
-}
-
-function statusLabel(status) {
-  return { online: '在线', offline: '离线', error: '异常' }[status] || status
-}
-
-function truncate(str, max) {
-  if (!str) return '--'
-  return str.length > max ? str.slice(0, max) + '...' : str
-}
+function truncate(str, max) { return str?.length > max ? str.slice(0, max) + '...' : str || '--' }
 </script>
 
 <style scoped>
-.capability-manager {
-  font-size: 13px;
-}
+.capability-manager { font-size: 13px; }
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.section-title { font-size: 15px; font-weight: 600; color: #1a1a2e; margin: 0; }
+.section-count { font-size: 12px; color: #8c8c8c; }
+.cap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.cap-card { background: #fff; border: 1px solid #e8e8e8; border-radius: 8px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; transition: box-shadow 0.2s; }
+.cap-card:hover { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); }
+.cap-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.cap-name-row { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
+.cap-icon { font-size: 18px; flex-shrink: 0; }
+.cap-name { font-weight: 600; font-size: 14px; color: #1a1a2e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cap-type-tag { font-size: 10px; padding: 1px 6px; border-radius: 3px; font-weight: 500; flex-shrink: 0; }
+.type-mcp { background: #e6f4ff; color: #1677ff; }
+.type-model { background: #f6ffed; color: #52c41a; }
+.type-channel { background: #fff7e6; color: #fa8c16; }
+.cap-desc { margin: 0; font-size: 12px; color: #bfbfbf; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.cap-meta-row { display: flex; flex-wrap: wrap; gap: 8px; font-size: 11px; color: #8c8c8c; }
+.cap-endpoint { color: #595959; }
+.cap-active { color: #bfbfbf; }
+.cap-card-actions { display: flex; align-items: center; gap: 8px; justify-content: flex-end; padding-top: 4px; }
+.cap-test-btn { font-size: 12px; }
 
-/* Section header */
-.section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-.section-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: #1a1a2e;
-  margin: 0;
-}
-.section-count {
-  font-size: 12px;
-  color: #8c8c8c;
-}
-
-/* MCP Grid */
-.mcp-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-/* MCP Card */
-.mcp-card {
-  background: #fff;
-  border: 1px solid #e8e8e8;
-  border-radius: 8px;
-  padding: 14px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  transition: box-shadow 0.2s;
-}
-.mcp-card:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.mcp-card-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.mcp-name-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  flex: 1;
-}
-
-/* Status dot */
-.mcp-status-dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.dot-online {
-  background: #52c41a;
-  box-shadow: 0 0 4px rgba(82, 196, 26, 0.4);
-}
-.dot-offline {
-  background: #d9d9d9;
-}
-.dot-error {
-  background: #f5222d;
-  box-shadow: 0 0 4px rgba(245, 34, 45, 0.4);
-}
-
-.mcp-name {
-  font-weight: 600;
-  font-size: 14px;
-  color: #1a1a2e;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.mcp-type-tag {
-  font-size: 11px;
-  flex-shrink: 0;
-  line-height: 20px;
-}
-
-/* MCP Meta */
-.mcp-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.mcp-meta-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-}
-.mcp-meta-label {
-  color: #8c8c8c;
-  flex-shrink: 0;
-  min-width: 44px;
-}
-.mcp-meta-value {
-  color: #595959;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.mcp-desc {
-  margin: 0;
-  font-size: 12px;
-  color: #bfbfbf;
-  line-height: 1.5;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.mcp-card-actions {
-  display: flex;
-  justify-content: flex-end;
-  padding-top: 4px;
-}
-.mcp-test-btn {
-  font-size: 12px;
-}
-
-/* LLM Card */
-.llm-card {
-  background: #fff;
-  border: 1px solid #e8e8e8;
-  border-radius: 8px;
-  padding: 16px;
-  transition: box-shadow 0.2s;
-}
-.llm-card:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.llm-card-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.llm-name-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  flex: 1;
-}
-.llm-icon {
-  font-size: 18px;
-  flex-shrink: 0;
-}
-.llm-name {
-  font-weight: 600;
-  font-size: 14px;
-  color: #1a1a2e;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.llm-status-badge {
-  flex-shrink: 0;
-  font-size: 11px;
-}
-
-.llm-details {
-  display: flex;
-  gap: 24px;
-}
-
-.llm-detail-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.llm-detail-label {
-  font-size: 12px;
-  color: #8c8c8c;
-}
-.llm-detail-badge {
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 500;
-  color: #595959;
-  background: #f5f5f5;
-  border: 1px solid #e8e8e8;
-  border-radius: 4px;
-  padding: 1px 8px;
-}
-.llm-detail-value {
-  font-size: 12px;
-  color: #595959;
-  font-weight: 500;
-}
+.llm-card { background: #fff; border: 1px solid #e8e8e8; border-radius: 8px; padding: 16px; transition: box-shadow 0.2s; }
+.llm-card:hover { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); }
+.llm-card-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.llm-name-row { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
+.llm-icon { font-size: 18px; flex-shrink: 0; }
+.llm-name { font-weight: 600; font-size: 14px; color: #1a1a2e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.llm-details { display: flex; flex-wrap: wrap; gap: 16px; }
+.llm-detail-item { display: flex; align-items: center; gap: 6px; }
+.llm-detail-label { font-size: 12px; color: #8c8c8c; }
+.llm-detail-badge { display: inline-block; font-size: 11px; font-weight: 500; color: #595959; background: #f5f5f5; border: 1px solid #e8e8e8; border-radius: 4px; padding: 1px 8px; }
+.llm-detail-value { font-size: 12px; color: #595959; font-weight: 500; }
 </style>
