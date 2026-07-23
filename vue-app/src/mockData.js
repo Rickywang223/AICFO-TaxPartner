@@ -5,11 +5,16 @@
 
 // ==================== 智能体列表 ====================
 export const agents = [
-  { id: 'agent-assistant',  icon: '👩‍💼', name: '杨姐的助理',  status: 'urgent',  badge: '3项紧急', summary: '今天有3件事需要处理', pendingCount: 0, lastActive: '刚刚',    description: '你的专属税务工作助手',             tabs: ['总览', '今日待办', '快捷操作'] },
-  { id: 'agent-certify',   icon: '📄', name: '发票认证专员', status: 'warning', badge: '45%完成', summary: '还剩23张待认证', pendingCount: 23, lastActive: '11:30',  description: '专门负责发票认证的智能体',         tabs: ['总览', '发票队列', '认证记录', '设置'] },
-  { id: 'agent-risk',      icon: '⚠️', name: '风险预警官',   status: 'urgent',  badge: '2家高危', summary: '新增1家风险公司', pendingCount: 2, lastActive: '09:15',  description: '7×24小时监控企业税务风险',          tabs: ['总览', '风险列表', '预警规则', '设置'] },
-  { id: 'agent-declare',   icon: '📋', name: '申报管家',     status: 'normal',  badge: '96%完成', summary: '距截止还有12天', pendingCount: 0, lastActive: '昨天',   description: '自动跟踪各税种申报进度',            tabs: ['总览', '申报进度', '历史申报', '设置'] },
-  { id: 'agent-compliance', icon: '🔍', name: '稽查合规师',  status: 'warning', badge: '新预警',   summary: '税负率1.78%正常', pendingCount: 1, lastActive: '10:42',  description: '专业税务稽查与合规分析',            tabs: ['总览', '检查清单', '合规报告', '设置'] },
+  { id: 'agent-assistant',  icon: '👩‍💼', name: '杨姐的助理',  status: 'urgent',  badge: '3项紧急', summary: '今天有3件事需要处理', pendingCount: 0, lastActive: '刚刚',    description: '你的专属税务工作助手',
+    dashTabs: { biDashboards: [{ id: 'db-1', name: '默认看板', type: 'bi' }], fixedTabs: [{ id: 'tasks', name: '任务管理', type: 'tasks' }, { id: 'capability', name: '能力管理', type: 'capability' }, { id: 'knowledge', name: '知识库', type: 'knowledge' }] } },
+  { id: 'agent-certify',   icon: '📄', name: '发票认证专员', status: 'warning', badge: '45%完成', summary: '还剩23张待认证', pendingCount: 23, lastActive: '11:30',  description: '专门负责发票认证的智能体',
+    dashTabs: { biDashboards: [{ id: 'db-1', name: '默认看板', type: 'bi' }], fixedTabs: [{ id: 'tasks', name: '任务管理', type: 'tasks' }, { id: 'capability', name: '能力管理', type: 'capability' }, { id: 'knowledge', name: '知识库', type: 'knowledge' }] } },
+  { id: 'agent-risk',      icon: '⚠️', name: '风险预警官',   status: 'urgent',  badge: '2家高危', summary: '新增1家风险公司', pendingCount: 2, lastActive: '09:15',  description: '7×24小时监控企业税务风险',
+    dashTabs: { biDashboards: [{ id: 'db-1', name: '默认看板', type: 'bi' }], fixedTabs: [{ id: 'tasks', name: '任务管理', type: 'tasks' }, { id: 'capability', name: '能力管理', type: 'capability' }, { id: 'knowledge', name: '知识库', type: 'knowledge' }] } },
+  { id: 'agent-declare',   icon: '📋', name: '申报管家',     status: 'normal',  badge: '96%完成', summary: '距截止还有12天', pendingCount: 0, lastActive: '昨天',   description: '自动跟踪各税种申报进度',
+    dashTabs: { biDashboards: [{ id: 'db-1', name: '默认看板', type: 'bi' }], fixedTabs: [{ id: 'tasks', name: '任务管理', type: 'tasks' }, { id: 'capability', name: '能力管理', type: 'capability' }, { id: 'knowledge', name: '知识库', type: 'knowledge' }] } },
+  { id: 'agent-compliance', icon: '🔍', name: '稽查合规师',  status: 'warning', badge: '新预警',   summary: '税负率1.78%正常', pendingCount: 1, lastActive: '10:42',  description: '专业税务稽查与合规分析',
+    dashTabs: { biDashboards: [{ id: 'db-1', name: '默认看板', type: 'bi' }], fixedTabs: [{ id: 'tasks', name: '任务管理', type: 'tasks' }, { id: 'capability', name: '能力管理', type: 'capability' }, { id: 'knowledge', name: '知识库', type: 'knowledge' }] } },
 ]
 
 export function getBadgeColor(status) {
@@ -415,4 +420,117 @@ export function getChatResponse(agentId, userText) {
 function getNow() {
   const d = new Date()
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
+// ==================== 任务管理 Mock 数据 ====================
+export const agentTasks = {
+  'agent-assistant': [
+    { id: 't1', title: '整理本月进项发票', description: '整理并归类本月所有进项发票', status: 'in_progress', priority: 'high', assignee: '杨姐', dueDate: '2026-07-25', createdAt: '2026-07-23' },
+    { id: 't2', title: '更新供应商信息', description: '新增3家供应商税务登记信息', status: 'pending', priority: 'medium', assignee: '杨姐', dueDate: '2026-07-28', createdAt: '2026-07-22' },
+    { id: 't3', title: '完成月度税务报告', description: '汇总本月税务数据并生成报告', status: 'completed', priority: 'high', assignee: '杨姐', dueDate: '2026-07-20', createdAt: '2026-07-15' },
+  ],
+  'agent-certify': [
+    { id: 't1', title: '认证华东区高危发票', description: '涉及苏宁电器等3家公司，共¥469,500', status: 'in_progress', priority: 'high', assignee: '杨姐', dueDate: '2026-07-25', createdAt: '2026-07-23' },
+    { id: 't2', title: '批量认证普通发票', description: '23张待认证普通发票批量处理', status: 'pending', priority: 'medium', assignee: '杨姐', dueDate: '2026-07-26', createdAt: '2026-07-22' },
+    { id: 't3', title: '导出认证清单', description: '导出本月认证清单供财务核对', status: 'pending', priority: 'low', assignee: '杨姐', dueDate: '2026-07-30', createdAt: '2026-07-21' },
+    { id: 't4', title: '处理异常发票', description: '3张税率异常的发票需要人工确认', status: 'completed', priority: 'high', assignee: '杨姐', dueDate: '2026-07-22', createdAt: '2026-07-20' },
+  ],
+  'agent-risk': [
+    { id: 't1', title: '排查高危风险公司', description: '2家高风险企业深入排查', status: 'in_progress', priority: 'high', assignee: '杨姐', dueDate: '2026-07-24', createdAt: '2026-07-23' },
+    { id: 't2', title: '更新风险预警规则', description: '根据最新政策更新预警阈值', status: 'pending', priority: 'medium', assignee: '杨姐', dueDate: '2026-07-29', createdAt: '2026-07-22' },
+  ],
+  'agent-declare': [
+    { id: 't1', title: '催报未申报公司', description: '华中第1分公司尚未完成本月申报', status: 'in_progress', priority: 'high', assignee: '杨姐', dueDate: '2026-07-24', createdAt: '2026-07-23' },
+  ],
+  'agent-compliance': [
+    { id: 't1', title: '完成季度合规检查', description: 'Q2季度合规检查全部项目', status: 'in_progress', priority: 'high', assignee: '杨姐', dueDate: '2026-07-26', createdAt: '2026-07-23' },
+    { id: 't2', title: '整理合规报告', description: '汇总检查结果并生成合规报告', status: 'pending', priority: 'medium', assignee: '杨姐', dueDate: '2026-07-28', createdAt: '2026-07-22' },
+  ],
+}
+
+// ==================== 能力管理 Mock 数据 ====================
+export const agentCapabilities = {
+  'agent-assistant': {
+    mcps: [
+      { id: 'mcp-invoice', name: '发票数据服务', type: 'api', endpoint: 'https://api.tax/internal/invoice', status: 'online', lastActive: '刚刚', description: '金税系统发票数据接口' },
+      { id: 'mcp-declare', name: '申报数据服务', type: 'api', endpoint: 'https://api.tax/internal/declare', status: 'online', lastActive: '3分钟前', description: '电子税务局申报接口' },
+    ],
+    llm: { provider: 'DeepSeek', model: 'deepseek-v4-flash', temperature: 0.3, maxTokens: 4096, status: 'active' },
+  },
+  'agent-certify': {
+    mcps: [
+      { id: 'mcp-invoice-db', name: '发票数据库', type: 'database', endpoint: 'mysql://tax-db/internal', status: 'online', lastActive: '刚刚', description: '金税系统发票数据接口' },
+      { id: 'mcp-cert-api', name: '认证服务API', type: 'api', endpoint: 'https://api.tax/certify', status: 'online', lastActive: '1分钟前', description: '发票认证服务接口' },
+    ],
+    llm: { provider: 'DeepSeek', model: 'deepseek-v4-flash', temperature: 0.2, maxTokens: 4096, status: 'active' },
+  },
+  'agent-risk': {
+    mcps: [
+      { id: 'mcp-risk-db', name: '风险数据库', type: 'database', endpoint: 'mysql://risk-db/internal', status: 'online', lastActive: '30秒前', description: '企业风险评分数据库' },
+      { id: 'mcp-warning', name: '预警规则引擎', type: 'api', endpoint: 'https://api.tax/risk/engine', status: 'error', lastActive: '2小时前', description: '风险预警规则计算引擎' },
+    ],
+    llm: { provider: 'DeepSeek', model: 'deepseek-v4-flash', temperature: 0.4, maxTokens: 4096, status: 'active' },
+  },
+  'agent-declare': {
+    mcps: [
+      { id: 'mcp-declare-db', name: '申报数据库', type: 'database', endpoint: 'mysql://declare-db/internal', status: 'online', lastActive: '10分钟前', description: '各税种申报进度数据库' },
+    ],
+    llm: { provider: 'DeepSeek', model: 'deepseek-v4-flash', temperature: 0.3, maxTokens: 4096, status: 'active' },
+  },
+  'agent-compliance': {
+    mcps: [
+      { id: 'mcp-compliance-db', name: '合规数据库', type: 'database', endpoint: 'mysql://compliance-db/internal', status: 'online', lastActive: '30分钟前', description: '税务合规检查数据库' },
+      { id: 'mcp-report', name: '报告生成服务', type: 'api', endpoint: 'https://api.tax/report/gen', status: 'online', lastActive: '5分钟前', description: '自动生成合规检查报告' },
+    ],
+    llm: { provider: 'DeepSeek', model: 'deepseek-v4-flash', temperature: 0.3, maxTokens: 4096, status: 'active' },
+  },
+}
+
+// ==================== 知识库 Mock 数据 ====================
+export const agentKnowledge = {
+  'agent-assistant': {
+    documents: [
+      { id: 'doc-1', name: '增值税发票认证流程.pdf', type: 'application/pdf', size: '2.3 MB', status: 'indexed', uploadedAt: '2026-07-22', chunks: 42 },
+      { id: 'doc-2', name: '企业税务合规手册.docx', type: 'application/docx', size: '1.8 MB', status: 'indexed', uploadedAt: '2026-07-20', chunks: 28 },
+    ],
+    dataSources: [
+      { id: 'ds-1', name: 'ERP系统数据库', type: 'mysql', host: '192.168.1.100', dbName: 'erp_tax', status: 'connected' },
+    ],
+  },
+  'agent-certify': {
+    documents: [
+      { id: 'doc-1', name: '发票认证操作规范.pdf', type: 'application/pdf', size: '3.1 MB', status: 'indexed', uploadedAt: '2026-07-21', chunks: 56 },
+      { id: 'doc-2', name: '高危发票识别标准.docx', type: 'application/docx', size: '890 KB', status: 'indexed', uploadedAt: '2026-07-19', chunks: 15 },
+      { id: 'doc-3', name: '2026年税务新政解读.pdf', type: 'application/pdf', size: '5.2 MB', status: 'indexing', uploadedAt: '2026-07-23', chunks: 0 },
+    ],
+    dataSources: [
+      { id: 'ds-1', name: '金税系统', type: 'api', host: 'api.golden-tax.gov.cn', status: 'connected' },
+    ],
+  },
+  'agent-risk': {
+    documents: [
+      { id: 'doc-1', name: '企业风险评分模型.pdf', type: 'application/pdf', size: '4.5 MB', status: 'indexed', uploadedAt: '2026-07-18', chunks: 78 },
+    ],
+    dataSources: [
+      { id: 'ds-1', name: '企业信用数据库', type: 'mysql', host: '192.168.1.200', dbName: 'credit_db', status: 'connected' },
+      { id: 'ds-2', name: '税务稽查黑名单', type: 'api', host: 'api.tax.gov/blacklist', status: 'error' },
+    ],
+  },
+  'agent-declare': {
+    documents: [
+      { id: 'doc-1', name: '各税种申报指南.pdf', type: 'application/pdf', size: '6.8 MB', status: 'indexed', uploadedAt: '2026-07-15', chunks: 102 },
+      { id: 'doc-2', name: '申报截止日期表.xlsx', type: 'application/xlsx', size: '450 KB', status: 'indexed', uploadedAt: '2026-07-10', chunks: 8 },
+    ],
+    dataSources: [
+      { id: 'ds-1', name: '电子税务局', type: 'api', host: 'api.etax.gov.cn', status: 'connected' },
+    ],
+  },
+  'agent-compliance': {
+    documents: [
+      { id: 'doc-1', name: '税务稽查条例汇编.pdf', type: 'application/pdf', size: '8.2 MB', status: 'indexed', uploadedAt: '2026-07-01', chunks: 135 },
+    ],
+    dataSources: [
+      { id: 'ds-1', name: '法规数据库', type: 'mysql', host: '192.168.1.150', dbName: 'regulations', status: 'connected' },
+    ],
+  },
 }

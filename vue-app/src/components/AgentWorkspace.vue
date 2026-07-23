@@ -30,12 +30,14 @@
           />
         </div>
         <div class="workspace-dash">
-          <AgentDashboard
+          <AgentViewContainer
+            :agent-id="agentId"
+            :dash-tabs="currentAgent.dashTabs"
             :dashboard="currentDashboard"
-            :active-tab="activeTab"
-            :tabs="currentAgent.tabs"
+            :tasks="currentTasks"
+            :capabilities="currentCapabilities"
+            :knowledge="currentKnowledge"
             @action="handleAction"
-            @tab-change="activeTab = $event"
           />
         </div>
       </div>
@@ -47,10 +49,13 @@
 import { ref, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import ChatPanel from './ChatPanel.vue'
-import AgentDashboard from './AgentDashboard.vue'
+import AgentViewContainer from './AgentViewContainer.vue'
 import {
   agents,
   agentDashboards,
+  agentTasks,
+  agentCapabilities,
+  agentKnowledge,
   initialMessages,
   getChatResponse,
 } from '../mockData.js'
@@ -67,14 +72,23 @@ const currentDashboard = computed(() => {
   return agentDashboards[agentId.value] || agentDashboards['agent-assistant']
 })
 
-// Active tab for dashboard switching
-const activeTab = ref('总览')
+const currentTasks = computed(() => {
+  return agentTasks[agentId.value] || []
+})
+
+const currentCapabilities = computed(() => {
+  return agentCapabilities[agentId.value] || { mcps: [], llm: null }
+})
+
+const currentKnowledge = computed(() => {
+  return agentKnowledge[agentId.value] || { documents: [], dataSources: [] }
+})
+
 const messages = ref([])
 const sending = ref(false)
 
 // Reset tab when agent changes
 watch(agentId, () => {
-  activeTab.value = '总览'
   resetMessages()
 }, { immediate: true })
 
