@@ -194,7 +194,6 @@ function onAction(payload) {
   display: flex;
   flex-direction: column;
   height: 100%;
-  overflow: hidden;
 }
 
 /* Tab Bar */
@@ -307,7 +306,6 @@ function onAction(payload) {
 /* View Area */
 .view-area {
   flex: 1;
-  overflow-y: auto;
   padding: 16px;
 }
 </style>

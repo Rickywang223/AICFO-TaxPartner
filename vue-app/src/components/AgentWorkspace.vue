@@ -197,7 +197,6 @@ function handleAction(action) {
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-  overflow: hidden;
 }
 
 /* 统一标题栏（双行） */
@@ -263,6 +262,7 @@ function handleAction(action) {
 .workspace-dash {
   flex: 1;
   min-width: 0;
+  overflow: auto;
 }
 
 @media (max-width: 1280px) {

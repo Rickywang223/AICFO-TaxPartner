@@ -88,50 +88,86 @@ export const agentDashboardData = {
     // ⭐ 看板一：今日工作台（默认）
     'db-1': {
       name: '今日工作台',
-      kpiCards: [
-        { id: 'pending-cert',  label: '待认证',      value: '23张',  valueFull: '23张待认证',         trend: 'up',   change: '+3张',   status: 'urgent'  },
-        { id: 'cert-rate',     label: '认证率',      value: '77%',   valueFull: '77/100张已完成',      trend: 'up',   change: '+2%',    status: 'warning' },
-        { id: 'high-risk',     label: '高风险',      value: '3张',   valueFull: '3张高危发票',         trend: 'down', change: '-1张',   status: 'urgent'  },
-        { id: 'done-today',    label: '今日已认证',  value: '12张',  valueFull: '今日已认证12张',      trend: 'up',   change: '+5张',   status: 'normal'  },
-      ],
+      // No top-level kpiCards — moved into health-snapshot section
       sections: [
-        { id: 'deadline', title: '📅 认证截止倒计时', type: 'deadline-countdown',
-          deadlineDate: '2026-07-28',
-          deadlineLabel: '本月认证截止日',
+        // ⭐ 区域1：今日待办中心（最重要！放最顶部）
+        { id: 'urgent-center', title: '🎯 今日待办中心', type: 'urgent-center',
+          deadlineLabel: '7月28日截止',
           daysLeft: 5,
-          items: [
-            { company: '苏宁电器',     amount: '¥456,000', priority: 'urgent',   suggestDays: '今天！' },
-            { company: '雪峰致远科技', amount: '¥12,300',  priority: 'warning',  suggestDays: '明天' },
-            { company: '华中第1分公司', amount: '¥1,200',   priority: 'normal',   suggestDays: '本周内' },
-            { company: '华东区汇总发票', amount: '¥89,000',  priority: 'normal',   suggestDays: '本周内' },
-            { company: '华南区进项发票', amount: '¥210,000', priority: 'normal',   suggestDays: '本周内' },
+          urgentTasks: [
+            { text: '苏宁电器 ¥456,000 · 23张未认证', urgency: 92, note: '金额最大 · 建议立即处理',
+              actions: [
+                { text: '一键认证', type: 'primary', action: 'certify-suning' },
+                { text: '查看明细', type: 'default', action: 'view-suning-detail' },
+              ] },
+            { text: '华中区认证率45% · 低于集团平均线', urgency: 85, note: '异常票23张',
+              actions: [
+                { text: '发送督办通知', type: 'primary', action: 'urge-huazhong' },
+                { text: '下钻查看', type: 'default', action: 'drill-huazhong' },
+              ] },
           ],
-          action: { text: '查看全部待认证', type: 'primary', action: 'view-queue' },
-        },
-        { id: 'pending-list', title: '🔥 待处理（按紧急度）', type: 'invoice-list',
-          items: [
-            { company: '苏宁电器',       amount: '¥456,000', urgency: 'critical', daysLeft: 3,  deadline: '2026-07-26', note: '仅剩3天' },
-            { company: '雪峰致远科技',   amount: '¥12,300',  urgency: 'warning',  daysLeft: 7,  deadline: '2026-07-30', note: '7天到期' },
-            { company: '华中第1分公司',  amount: '¥1,200',   urgency: 'warning',  daysLeft: 7,  deadline: '2026-07-30', note: '7天到期' },
-          ],
-          actions: [
-            { text: '一键认证高危', type: 'primary', action: 'certify-danger' },
-            { text: '批量认证',    type: 'default', action: 'batch-certify' },
-          ],
-        },
-        { id: 'today-tasks', title: '📋 今日待办', type: 'task-list',
-          items: [
-            { text: '认证华东区高危发票', status: 'in_progress' },
-            { text: '批量认证普通发票',    status: 'pending' },
-            { text: '导出认证清单',       status: 'pending' },
+          pendingTasks: [
+            { text: '雪峰致远异常发票  ¥12,300 · 供应商异常率8%',
+              actions: [ { text: '查看处理', type: 'default', action: 'handle-xuefeng' } ] },
+            { text: '华南区认证率67% · 距截止15天',
+              actions: [ { text: '下钻查看', type: 'default', action: 'drill-huanan' } ] },
+            { text: '导出本月认证清单供财务核对',
+              actions: [ { text: '导出清单', type: 'default', action: 'export-list' } ] },
           ],
         },
-        { id: 'cert-queue', title: '📊 实时认证队列', type: 'cert-queue',
-          headers: ['公司', '金额', '状态'],
+
+        // 💡 区域2：集团健康一瞥（4卡片）
+        { id: 'health', title: '💡 集团健康一瞥', type: 'health-snapshot',
+          cards: [
+            { id: 'countdown', label: '📅 认证倒计时', value: '5天', sub: '距截止 7月28日', status: 'danger',
+              action: { text: '查看全部', type: 'default', action: 'view-queue' } },
+            { id: 'progress', label: '📊 认证进度', value: '77%', sub: '已认证77/100张', status: 'warning',
+              action: { text: '查看明细', type: 'default', action: 'view-progress' } },
+            { id: 'loss', label: '💰 过期损失', value: '¥315万', sub: '本月过期损失预估', status: 'danger',
+              action: { text: '生成补认证工单', type: 'primary', action: 'gen-work-order' } },
+            { id: 'score', label: '🏆 健康评分', value: 'B级', sub: '综合评分74分', status: 'normal',
+              action: { text: '查看详情', type: 'default', action: 'view-health-detail' } },
+          ],
+        },
+
+        // 🔥 区域3：申报紧迫度排行
+        { id: 'urgency', title: '🔥 申报紧迫度排行', type: 'urgency-rank',
+          deadlineLabel: '距截止还有 5 天',
+          groups: [
+            { level: 'urgent', label: '🔴 优先处理',
+              items: [
+                { company: '苏宁电器', amount: '¥456,000', count: '23张', region: '华中区·万达店', age: '发票开具超90天', loss: '¥45.6万', urgency: 92,
+                  actions: [ { text: '一键认证', type: 'primary', action: 'certify-suning' }, { text: '查看明细', type: 'default', action: 'view-suning-detail' } ] },
+                { company: '雪峰致远科技', amount: '¥178,000', count: '8张', region: '华南区·广州分公司', age: '供应商异常率8%', loss: '¥17.8万', urgency: 78,
+                  actions: [ { text: '一键认证', type: 'primary', action: 'certify-xuefeng' }, { text: '查看明细', type: 'default', action: 'view-xuefeng-detail' } ] },
+              ],
+              batchActions: [ { text: '一键认证两项', type: 'primary', action: 'batch-certify-urgent' }, { text: '导出待认证清单', type: 'default', action: 'export-urgent-list' } ],
+            },
+            { level: 'watch', label: '🟠 关注处理',
+              items: [
+                { company: '美团', amount: '¥89,000', count: '8张', region: '华南区·深圳分公司', age: '发票开具30天', loss: '¥8.9万', urgency: 55,
+                  actions: [ { text: '一键认证', type: 'primary', action: 'certify-meituan' }, { text: '查看明细', type: 'default', action: 'view-meituan-detail' } ] },
+              ],
+            },
+            { level: 'safe', label: '🟢 常规处理',
+              count: '193.7万张',
+              note: '其余未认证发票正常安排，暂无需特别关注',
+              action: { text: '查看全部清单 →', type: 'default', action: 'view-all' },
+            },
+          ],
+        },
+
+        // ⚡ 区域4：智能建议
+        { id: 'suggestions', title: '⚡ 智能建议', type: 'smart-suggestions',
           items: [
-            { company: '苏宁电器',     amount: '¥456,000', status: '排队中', statusColor: 'default' },
-            { company: '雪峰致远科技', amount: '¥12,300',  status: '认证中', statusColor: 'processing' },
-            { company: '华中第1分公司', amount: '¥1,200',   status: '排队中', statusColor: 'default' },
+            { title: '开启自动认证规则', desc: '预计可提升认证率至85%',
+              actions: [ { text: '立即开启 ⚡', type: 'primary', action: 'enable-auto' }, { text: '了解更多', type: 'default', action: 'learn-more' } ] },
+            { title: '优先处理高危发票', desc: '3张跨期发票<15天',
+              actions: [ { text: '一键认证所有高危', type: 'primary', action: 'certify-danger' }, { text: '导出待认证清单', type: 'default', action: 'export-list' } ] },
+            { title: '华中区域认证率仅45%', desc: '低于集团平均线',
+              actions: [ { text: '下钻查看', type: 'default', action: 'drill-huazhong' }, { text: '发送督办通知', type: 'primary', action: 'urge-huazhong' } ] },
+            { title: 'AI已生成补认证清单', desc: '预计可挽回损失¥80万',
+              actions: [ { text: '查看清单', type: 'default', action: 'view-list' }, { text: '生成补认证工单', type: 'primary', action: 'gen-work-order' } ] },
           ],
         },
       ],

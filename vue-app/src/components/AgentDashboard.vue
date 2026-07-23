@@ -1,31 +1,6 @@
 <template>
   <div class="dashboard-panel">
-    <!-- Scrollable content -->
     <div class="dash-scroll">
-
-      <!-- KPI Cards Row -->
-      <div class="kpi-row">
-        <div
-          v-for="kpi in dashboard.kpiCards"
-          :key="kpi.id"
-          class="kpi-card"
-          :class="'kpi-' + kpi.status"
-          @click="$emit('action', { text: '查看' + kpi.label, type: 'default', action: 'drill-' + kpi.id })"
-        >
-          <div class="kpi-label">{{ kpi.label }}</div>
-          <div class="kpi-value">{{ kpi.value }}</div>
-          <div class="kpi-footer">
-            <span class="kpi-full">{{ kpi.valueFull }}</span>
-            <span class="kpi-change" :class="'change-' + kpi.trend">
-              <template v-if="kpi.trend === 'up'">↑</template>
-              <template v-else-if="kpi.trend === 'down'">↓</template>
-              {{ kpi.change }}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Section Cards -->
       <div v-for="sec in dashboard.sections" :key="sec.id" class="section-card">
         <div class="section-title">{{ sec.title }}</div>
 
@@ -303,6 +278,93 @@
             <a-button v-for="(act, aidx) in sec.actions" :key="aidx" :type="act.type === 'primary' ? 'primary' : 'default'" size="small" class="section-action-btn" @click="$emit('action', act)">{{ act.text }}</a-button>
           </div>
         </div>
+
+        <!-- Type: urgent-center (今日待办中心) -->
+        <div v-if="sec.type === 'urgent-center'" class="section-body">
+          <div class="uc-header">
+            <span class="uc-deadline">距 {{ sec.deadlineLabel }} 还剩 <strong>{{ sec.daysLeft }}天</strong></span>
+          </div>
+          <div v-if="sec.urgentTasks && sec.urgentTasks.length" class="uc-group">
+            <div class="uc-group-label urgent">🔴 紧急任务 · {{ sec.urgentTasks.length }} 项</div>
+            <div v-for="(task, idx) in sec.urgentTasks" :key="'u'+idx" class="uc-task urgent">
+              <div class="uc-task-text">{{ task.text }}</div>
+              <div class="uc-task-note">{{ task.note }}</div>
+              <div v-if="task.actions" class="uc-task-actions">
+                <a-button v-for="(act, aidx) in task.actions" :key="aidx" :type="act.type === 'primary' ? 'primary' : 'default'" size="small" @click="$emit('action', act)">{{ act.text }}</a-button>
+              </div>
+            </div>
+          </div>
+          <div v-if="sec.pendingTasks && sec.pendingTasks.length" class="uc-group">
+            <div class="uc-group-label pending">🟠 今日待办 · {{ sec.pendingTasks.length }} 项</div>
+            <div v-for="(task, idx) in sec.pendingTasks" :key="'p'+idx" class="uc-task pending">
+              <div class="uc-task-text">{{ task.text }}</div>
+              <div v-if="task.actions" class="uc-task-actions">
+                <a-button v-for="(act, aidx) in task.actions" :key="aidx" :type="act.type === 'primary' ? 'primary' : 'default'" size="small" @click="$emit('action', act)">{{ act.text }}</a-button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Type: health-snapshot (集团健康一瞥) -->
+        <div v-if="sec.type === 'health-snapshot'" class="section-body">
+          <div class="hs-row">
+            <div v-for="card in sec.cards" :key="card.id" class="hs-card" :class="'hs-' + card.status">
+              <div class="hs-card-label">{{ card.label }}</div>
+              <div class="hs-card-value">{{ card.value }}</div>
+              <div class="hs-card-sub">{{ card.sub }}</div>
+              <div v-if="card.action" class="hs-card-action">
+                <a-button :type="card.action.type === 'primary' ? 'primary' : 'link'" size="small" @click="$emit('action', card.action)">{{ card.action.text }}</a-button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Type: urgency-rank (申报紧迫度排行) -->
+        <div v-if="sec.type === 'urgency-rank'" class="section-body">
+          <div class="ur-deadline">{{ sec.deadlineLabel }}</div>
+          <div v-for="(group, gidx) in sec.groups" :key="gidx" class="ur-group" :class="'ur-' + group.level">
+            <div class="ur-group-label">{{ group.label }}</div>
+            <div v-if="group.items" v-for="(item, iidx) in group.items" :key="iidx" class="ur-item">
+              <div class="ur-item-main">
+                <span class="ur-company">{{ item.company }}</span>
+                <span class="ur-amount">{{ item.amount }}</span>
+                <span class="ur-count">{{ item.count }}</span>
+              </div>
+              <div class="ur-item-detail">
+                <span>{{ item.region }}</span>
+                <span>{{ item.age }}</span>
+              </div>
+              <div class="ur-item-consequence">若错过本月申报，预估多缴增值税 <strong>{{ item.loss }}</strong></div>
+              <div class="ur-item-urgency">紧迫度 <strong>{{ item.urgency }}</strong> · 距截止 5 天</div>
+              <div v-if="item.actions" class="ur-item-actions">
+                <a-button v-for="(act, aidx) in item.actions" :key="aidx" :type="act.type === 'primary' ? 'primary' : 'default'" size="small" @click="$emit('action', act)">{{ act.text }}</a-button>
+              </div>
+            </div>
+            <div v-if="group.batchActions" class="ur-batch">
+              <a-button v-for="(act, aidx) in group.batchActions" :key="aidx" :type="act.type === 'primary' ? 'primary' : 'default'" size="small" @click="$emit('action', act)">{{ act.text }}</a-button>
+            </div>
+            <div v-if="group.level === 'safe'" class="ur-safe">
+              <div class="ur-safe-text">其余 <strong>{{ group.count }}</strong> 张未认证发票正常安排，暂无需特别关注</div>
+              <div v-if="group.action" class="ur-safe-action">
+                <a-button :type="group.action.type === 'primary' ? 'primary' : 'link'" size="small" @click="$emit('action', group.action)">{{ group.action.text }}</a-button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Type: smart-suggestions (智能建议) -->
+        <div v-if="sec.type === 'smart-suggestions'" class="section-body">
+          <div v-for="(item, idx) in sec.items" :key="idx" class="ss-item">
+            <div class="ss-item-header">
+              <span class="ss-num">{{ idx + 1 }}</span>
+              <span class="ss-title">{{ item.title }}</span>
+            </div>
+            <div class="ss-desc">{{ item.desc }}</div>
+            <div class="ss-actions">
+              <a-button v-for="(act, aidx) in item.actions" :key="aidx" :type="act.type === 'primary' ? 'primary' : 'default'" size="small" @click="$emit('action', act)">{{ act.text }}</a-button>
+            </div>
+          </div>
+        </div>
       </div>
       <div v-if="dashboard.regionChart" class="section-card">
         <div class="section-title">{{ dashboard.regionChart.title }}</div>
@@ -340,19 +402,12 @@ const emit = defineEmits(['action'])
 
 <style scoped>
 .dashboard-panel {
-  height: 100%;
   background: #f5f6fa;
-  display: flex;
-  flex-direction: column;
 }
 
 .dash-scroll {
   flex: 1;
-  overflow-y: auto;
   padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
 }
 
 /* KPI Row */
@@ -408,8 +463,9 @@ const emit = defineEmits(['action'])
 .section-card {
   background: #fff;
   border-radius: 8px;
+  padding: 0;
+  margin-bottom: 12px;
   border: 1px solid #e8e8e8;
-  overflow: hidden;
 }
 .section-title {
   font-size: 14px;
@@ -604,6 +660,69 @@ const emit = defineEmits(['action'])
 .change-normal { color: #52c41a; }
 .change-warning { color: #fa8c16; }
 .change-urgent { color: #f5222d; }
+
+/* Urgent Center (今日待办中心) */
+.uc-header { display: flex; align-items: center; justify-content: flex-end; margin-bottom: 12px; }
+.uc-deadline { font-size: 12px; color: #8c8c8c; }
+.uc-deadline strong { color: #f5222d; font-size: 14px; margin: 0 2px; }
+.uc-group { margin-bottom: 14px; }
+.uc-group:last-child { margin-bottom: 0; }
+.uc-group-label { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+.uc-group-label.urgent { color: #cf1322; }
+.uc-group-label.pending { color: #d46b08; }
+.uc-task { padding: 10px 12px; border-radius: 6px; border: 1px solid #f0f0f0; margin-bottom: 6px; }
+.uc-task.urgent { border-left: 3px solid #f5222d; background: #fff1f0; }
+.uc-task.pending { border-left: 3px solid #fa8c16; background: #fffbe6; }
+.uc-task-text { font-size: 13px; color: #1a1a2e; font-weight: 500; }
+.uc-task-note { font-size: 12px; color: #8c8c8c; margin-top: 2px; }
+.uc-task-actions { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+
+/* Health Snapshot (集团健康一瞥) */
+.hs-row { display: flex; gap: 12px; }
+.hs-card { flex: 1; padding: 14px 12px; border-radius: 8px; border: 1px solid #f0f0f0; background: #fff; }
+.hs-card-label { font-size: 12px; color: #8c8c8c; margin-bottom: 4px; }
+.hs-card-value { font-size: 22px; font-weight: 700; color: #1a1a2e; }
+.hs-card-sub { font-size: 11px; color: #bfbfbf; margin-top: 2px; }
+.hs-card-action { margin-top: 8px; }
+.hs-danger .hs-card-value { color: #f5222d; }
+.hs-warning .hs-card-value { color: #fa8c16; }
+.hs-normal .hs-card-value { color: #1890ff; }
+
+/* Urgency Rank (申报紧迫度排行) */
+.ur-deadline { text-align: right; font-size: 12px; color: #8c8c8c; margin-bottom: 12px; }
+.ur-group { margin-bottom: 16px; }
+.ur-group:last-child { margin-bottom: 0; }
+.ur-group-label { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+.ur-urgent .ur-group-label { color: #cf1322; }
+.ur-watch .ur-group-label { color: #d46b08; }
+.ur-safe .ur-group-label { color: #52c41a; }
+.ur-item { padding: 12px; border-radius: 6px; border: 1px solid #f0f0f0; margin-bottom: 8px; }
+.ur-urgent .ur-item { border-left: 3px solid #f5222d; background: #fff1f0; }
+.ur-watch .ur-item { border-left: 3px solid #fa8c16; background: #fffbe6; }
+.ur-item-main { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.ur-company { font-size: 13px; font-weight: 600; color: #1a1a2e; min-width: 80px; }
+.ur-amount { font-size: 14px; font-weight: 700; color: #f5222d; }
+.ur-count { font-size: 12px; color: #595959; }
+.ur-item-detail { font-size: 12px; color: #8c8c8c; margin-top: 4px; display: flex; gap: 12px; }
+.ur-item-consequence { font-size: 12px; color: #595959; margin-top: 4px; }
+.ur-item-consequence strong { color: #f5222d; }
+.ur-item-urgency { font-size: 11px; color: #8c8c8c; margin-top: 2px; }
+.ur-item-urgency strong { color: #1a1a2e; }
+.ur-item-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.ur-batch { display: flex; gap: 8px; margin-top: 8px; }
+.ur-safe { padding: 16px; text-align: center; background: #f6ffed; border-radius: 6px; border: 1px dashed #b7eb8f; }
+.ur-safe-text { font-size: 13px; color: #595959; }
+.ur-safe-text strong { color: #52c41a; }
+.ur-safe-action { margin-top: 8px; }
+
+/* Smart Suggestions (智能建议) */
+.ss-item { padding: 12px; border-bottom: 1px solid #f5f5f5; }
+.ss-item:last-child { border-bottom: none; }
+.ss-item-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.ss-num { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: #1677ff; color: #fff; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+.ss-title { font-size: 13px; font-weight: 500; color: #1a1a2e; }
+.ss-desc { font-size: 12px; color: #8c8c8c; margin-left: 28px; margin-bottom: 6px; }
+.ss-actions { display: flex; gap: 6px; margin-left: 28px; flex-wrap: wrap; }
 
 /* Scrollbar */
 .dash-scroll::-webkit-scrollbar {
