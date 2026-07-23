@@ -682,47 +682,86 @@ export const managedAgents = [
 
 
 // ==================== 工具系统 · 本体数据 ====================
-export const ontologies = [
-  {
-    id: 'onto-001',
-    name: '税务核心本体',
-    description: '涵盖发票、申报、公司等核心税务实体',
-    icon: '📦',
-    status: 'published',
-    version: 1,
-    entityCount: 5,
-    propertyCount: 19,
-    relationCount: 8,
-    boundAgents: ['agent-assistant', 'agent-certify'],
-    createdAt: '2026-07-20',
-    updatedAt: '2026-07-23',
-  },
-  {
-    id: 'onto-002',
-    name: '发票生命周期本体',
-    description: '从开具到认证到归档的全流程发票实体关系',
-    icon: '📄',
-    status: 'published',
-    version: 2,
-    entityCount: 3,
-    propertyCount: 8,
-    relationCount: 4,
-    boundAgents: [],
-    createdAt: '2026-07-18',
-    updatedAt: '2026-07-22',
-  },
-  {
-    id: 'onto-003',
-    name: '申报管理本体',
-    description: '申报流程中的实体关系定义',
-    icon: '📋',
-    status: 'draft',
-    version: 1,
-    entityCount: 2,
-    propertyCount: 5,
-    relationCount: 2,
-    boundAgents: [],
-    createdAt: '2026-07-21',
-    updatedAt: '2026-07-21',
-  },
-]
+export const ontologies = [{
+  id: 'onto-001', name: '税务核心本体', icon: '📦',
+  description: '涵盖发票、申报、公司等核心税务实体',
+  status: 'published', version: 1,
+  boundAgents: ['agent-assistant', 'agent-certify'],
+  createdAt: '2026-07-20', updatedAt: '2026-07-23',
+  entities: [
+    {
+      id: 'ent-invoice', name: '发票', icon: '📄',
+      description: '企业开具或收到的税务发票',
+      properties: [
+        { id: 'prop-inv-no', name: '发票号码', type: 'string', required: true, constraints: ['length=12'], example: '123456789012' },
+        { id: 'prop-inv-date', name: '开票日期', type: 'date', required: true },
+        { id: 'prop-inv-amount', name: '金额', type: 'number', required: true, constraints: ['min=0'] },
+        { id: 'prop-inv-tax', name: '税率', type: 'enum', enumValues: ['0%', '3%', '6%', '9%', '13%'], required: true },
+        { id: 'prop-inv-status', name: '状态', type: 'enum', enumValues: ['已开具', '已认证', '已作废', '已红冲'], required: true },
+      ],
+      relations: [
+        { targetEntity: 'ent-company', type: 'belongsTo', label: '所属公司' },
+        { targetEntity: 'ent-declaration', type: 'relatesTo', label: '关联申报' },
+        { targetEntity: 'ent-detail', type: 'contains', label: '包含明细' },
+      ],
+    }, {
+      id: 'ent-company', name: '公司', icon: '🏢',
+      description: '企业主体，发票的拥有者',
+      properties: [
+        { id: 'prop-comp-name', name: '公司名称', type: 'string', required: true },
+        { id: 'prop-comp-taxid', name: '税号', type: 'string', required: true, constraints: ['pattern=^[0-9A-Z]{15,18}$'] },
+        { id: 'prop-comp-industry', name: '行业', type: 'enum', enumValues: ['餐饮', '零售', '制造', '服务'] },
+      ],
+      relations: [
+        { targetEntity: 'ent-store', type: 'hasMany', label: '旗下门店' },
+      ],
+    }, {
+      id: 'ent-store', name: '门店', icon: '🏪',
+      description: '公司的分支机构',
+      properties: [
+        { id: 'prop-store-name', name: '门店名称', type: 'string', required: true },
+        { id: 'prop-store-addr', name: '地址', type: 'string' },
+      ],
+      relations: [
+        { targetEntity: 'ent-company', type: 'belongsTo', label: '所属公司' },
+      ],
+    }, {
+      id: 'ent-declaration', name: '申报单', icon: '📋',
+      description: '税务申报记录',
+      properties: [
+        { id: 'prop-decl-period', name: '申报期', type: 'string', required: true },
+        { id: 'prop-decl-tax', name: '税种', type: 'enum', enumValues: ['增值税', '企业所得税', '个税', '附加税'] },
+        { id: 'prop-decl-amount', name: '金额', type: 'number', required: true },
+        { id: 'prop-decl-status', name: '状态', type: 'enum', enumValues: ['待申报', '已申报', '已缴款', '逾期'] },
+      ],
+      relations: [
+        { targetEntity: 'ent-invoice', type: 'hasMany', label: '关联发票' },
+        { targetEntity: 'ent-company', type: 'belongsTo', label: '申报企业' },
+      ],
+    }, {
+      id: 'ent-detail', name: '发票明细', icon: '📝',
+      description: '发票的具体商品或服务条目',
+      properties: [
+        { id: 'prop-det-goods', name: '商品名称', type: 'string', required: true },
+        { id: 'prop-det-qty', name: '数量', type: 'number', constraints: ['min=0'] },
+        { id: 'prop-det-price', name: '单价', type: 'number', constraints: ['min=0'] },
+        { id: 'prop-det-total', name: '金额', type: 'number', required: true },
+      ],
+      relations: [
+        { targetEntity: 'ent-invoice', type: 'belongsTo', label: '所属发票' },
+      ],
+    },
+  ],
+}, {
+  id: 'onto-002', name: '发票生命周期本体', icon: '📄',
+  description: '从开具到认证到归档的全流程发票实体关系',
+  status: 'published', version: 2,
+  boundAgents: [], createdAt: '2026-07-18', updatedAt: '2026-07-22',
+  entities: [],
+}, {
+  id: 'onto-003', name: '申报管理本体', icon: '📋',
+  description: '申报流程中的实体关系定义',
+  status: 'draft', version: 1,
+  boundAgents: [], createdAt: '2026-07-21', updatedAt: '2026-07-21',
+  entities: [],
+}]

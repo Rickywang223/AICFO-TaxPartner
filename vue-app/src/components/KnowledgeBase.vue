@@ -77,9 +77,97 @@
 
       <!-- Ontology View -->
       <template v-if="activeSrc === 'onto'">
-        <div v-if="!ontologies.length" class="empty-state"><span class="empty-icon">🧠</span><span class="empty-text">暂无本体，点击下方按钮创建</span></div>
+        <!-- Editor Mode -->
+        <template v-if="editingOntology">
+          <div class="onto-editor-toolbar">
+            <a-button type="text" @click="editingOntology = null; editingEntity = null">⬅ 返回列表</a-button>
+            <span class="onto-editor-title">{{ editingOntology.icon }} {{ editingOntology.name }}</span>
+            <a-button size="small" @click="addEntity">+ 添加实体</a-button>
+          </div>
+          <div class="onto-editor-body">
+            <!-- Left: Entity List -->
+            <div class="onto-entity-list">
+              <div
+                v-for="ent in editingOntology.entities"
+                :key="ent.id"
+                class="onto-entity-item"
+                :class="{ 'entity-active': editingEntity?.id === ent.id }"
+                @click="selectEntity(ent)"
+              >
+                <div class="entity-item-top">
+                  <span class="entity-icon">{{ ent.icon }}</span>
+                  <span class="entity-name">{{ ent.name }}</span>
+                  <span class="entity-counts">{{ ent.properties?.length || 0 }}属性</span>
+                </div>
+                <div class="entity-item-actions">
+                  <a-button size="small" type="link" @click.stop="renameEntity(ent)">✏️</a-button>
+                  <a-button size="small" type="link" danger @click.stop="deleteEntity(ent)">🗑</a-button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Entity Editor -->
+            <div class="onto-entity-editor">
+              <template v-if="editingEntity">
+                <div class="entity-editor-header">
+                  <span class="editor-entity-name">{{ editingEntity.icon }} {{ editingEntity.name }}</span>
+                  <span class="editor-entity-desc">{{ editingEntity.description }}</span>
+                </div>
+
+                <!-- Properties Section -->
+                <div class="editor-section">
+                  <div class="editor-section-header">
+                    <span>📋 属性</span>
+                    <a-button size="small" type="primary" ghost @click="addProperty">+ 添加属性</a-button>
+                  </div>
+                  <div class="editor-section-list">
+                    <div v-for="prop in editingEntity.properties" :key="prop.id" class="editor-row">
+                      <span class="row-name">{{ prop.name }}</span>
+                      <span class="row-type">{{ typeLabel(prop.type) }}</span>
+                      <span v-if="prop.required" class="row-required">必填</span>
+                      <span v-if="prop.type === 'enum'" class="row-enum">{{ prop.enumValues?.join(', ') }}</span>
+                      <span v-if="prop.example" class="row-example">例: {{ prop.example }}</span>
+                      <span class="row-actions">
+                        <a-button size="small" type="link" @click="editProperty(prop)">✏️</a-button>
+                        <a-button size="small" type="link" danger @click="deleteProperty(prop)">🗑</a-button>
+                      </span>
+                    </div>
+                    <div v-if="!editingEntity.properties?.length" class="editor-empty">暂无属性，点击上方添加</div>
+                  </div>
+                </div>
+
+                <!-- Relations Section -->
+                <div class="editor-section">
+                  <div class="editor-section-header">
+                    <span>🔗 关系</span>
+                    <a-button size="small" type="primary" ghost @click="addRelation">+ 添加关系</a-button>
+                  </div>
+                  <div class="editor-section-list">
+                    <div v-for="rel in editingEntity.relations" :key="rel.id || rel.label + rel.targetEntity" class="editor-row">
+                      <span class="row-name">{{ rel.label }}</span>
+                      <span class="row-type">{{ relTypeLabel(rel.type) }}</span>
+                      <span class="row-target">→ {{ entityName(rel.targetEntity) }}</span>
+                      <span class="row-actions">
+                        <a-button size="small" type="link" @click="editRelation(rel)">✏️</a-button>
+                        <a-button size="small" type="link" danger @click="deleteRelation(rel)">🗑</a-button>
+                      </span>
+                    </div>
+                    <div v-if="!editingEntity.relations?.length" class="editor-empty">暂无关系，点击上方添加</div>
+                  </div>
+                </div>
+              </template>
+              <div v-else class="editor-empty-state">
+                <span class="empty-icon">👈</span><span>请选择或创建一个实体</span>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!-- List Mode -->
+        <template v-else>
+          <div v-if="!ontologies.length" class="empty-state"><span class="empty-icon">🧠</span><span class="empty-text">暂无本体，点击下方按钮创建</span></div>
       <div v-else class="onto-list">
-        <div v-for="onto in ontologies" :key="onto.id" class="onto-card" @click="viewOntology(onto)">
+        <div v-for="onto in ontoStats" :key="onto.id" class="onto-card" @click="viewOntology(onto)">
           <div class="onto-card-top">
             <span class="onto-icon">{{ onto.icon }}</span>
             <span class="onto-name">{{ onto.name }}</span>
@@ -105,6 +193,7 @@
         </div>
       </div>
       <a-button type="dashed" block @click="showOntoModal" style="margin-top: 4px;">+ 创建本体</a-button>
+    </template>
     </template>
     </div>
   </div>
@@ -137,10 +226,74 @@
         <a-form-item label="描述"><a-textarea v-model:value="ontoForm.description" rows="3" placeholder="描述本体的用途和覆盖范围..." /></a-form-item>
       </a-form>
     </a-modal>
+
+    <!-- Entity Rename Modal -->
+    <a-modal v-model:open="entityModalOpen" title="✏️ 重命名实体" @ok="saveEntityRename" @cancel="entityModalOpen = false" width="460px" ok-text="💾 保存" cancel-text="取消">
+      <a-form :model="entityForm" layout="vertical">
+        <a-form-item label="实体名称"><a-input v-model:value="entityForm.name" placeholder="如：发票" /></a-form-item>
+        <a-form-item label="图标">
+          <a-select v-model:value="entityForm.icon">
+            <a-select-option value="📄">📄 文档</a-select-option>
+            <a-select-option value="🏢">🏢 公司</a-select-option>
+            <a-select-option value="🏪">🏪 门店</a-select-option>
+            <a-select-option value="📋">📋 申报</a-select-option>
+            <a-select-option value="📝">📝 明细</a-select-option>
+            <a-select-option value="👤">👤 人员</a-select-option>
+            <a-select-option value="🔗">🔗 链接</a-select-option>
+          </a-select>
+        </a-form-item>
+        <a-form-item label="描述"><a-textarea v-model:value="entityForm.description" rows="2" placeholder="实体的业务含义..." /></a-form-item>
+      </a-form>
+    </a-modal>
+
+    <!-- Property Modal -->
+    <a-modal v-model:open="propModalOpen" :title="propForm.id ? '✏️ 编辑属性' : '📋 添加属性'" @ok="saveProperty" @cancel="propModalOpen = false" width="500px" ok-text="💾 保存" cancel-text="取消">
+      <a-form :model="propForm" layout="vertical">
+        <a-form-item label="属性名称"><a-input v-model:value="propForm.name" placeholder="如：发票号码" /></a-form-item>
+        <a-form-item label="数据类型">
+          <a-select v-model:value="propForm.type">
+            <a-select-option value="string">🔤 文本</a-select-option>
+            <a-select-option value="number">🔢 数字</a-select-option>
+            <a-select-option value="date">📅 日期</a-select-option>
+            <a-select-option value="enum">📋 枚举</a-select-option>
+            <a-select-option value="boolean">✅ 布尔</a-select-option>
+          </a-select>
+        </a-form-item>
+        <a-form-item v-if="propForm.type === 'enum'" label="枚举值（逗号分隔）">
+          <a-input v-model:value="propForm.enumValuesStr" placeholder="0%, 3%, 6%, 9%, 13%" />
+        </a-form-item>
+        <a-row :gutter="16">
+          <a-col :span="12"><a-form-item label="示例值"><a-input v-model:value="propForm.example" placeholder="123456789012" /></a-form-item></a-col>
+          <a-col :span="12"><a-form-item label=" "><a-checkbox v-model:checked="propForm.required">必填</a-checkbox></a-form-item></a-col>
+        </a-row>
+      </a-form>
+    </a-modal>
+
+    <!-- Relation Modal -->
+    <a-modal v-model:open="relationModalOpen" :title="relationForm.id ? '✏️ 编辑关系' : '🔗 添加关系'" @ok="saveRelation" @cancel="relationModalOpen = false" width="500px" ok-text="💾 保存" cancel-text="取消">
+      <a-form :model="relationForm" layout="vertical">
+        <a-form-item label="关系标签"><a-input v-model:value="relationForm.label" placeholder="如：所属公司" /></a-form-item>
+        <a-form-item label="目标实体">
+          <a-select v-model:value="relationForm.targetEntity">
+            <a-select-option v-for="ent in editingOntology?.entities || []" :key="ent.id" :value="ent.id">
+              {{ ent.icon }} {{ ent.name }}
+            </a-select-option>
+          </a-select>
+        </a-form-item>
+        <a-form-item label="关系类型">
+          <a-select v-model:value="relationForm.type">
+            <a-select-option value="belongsTo">🔗 属于 (belongsTo)</a-select-option>
+            <a-select-option value="hasMany">🔗 拥有多个 (hasMany)</a-select-option>
+            <a-select-option value="relatesTo">🔗 关联 (relatesTo)</a-select-option>
+            <a-select-option value="contains">🔗 包含 (contains)</a-select-option>
+          </a-select>
+        </a-form-item>
+      </a-form>
+    </a-modal>
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { knowledgeCategories, ontologies } from '../mockData.js'
 
 const categories = knowledgeCategories
@@ -158,6 +311,21 @@ const editingDb = ref(null)
 const dbTestResult = reactive({ status: '', msg: '' })
 const ontoModalOpen = ref(false)
 const ontoForm = reactive({ name: '', description: '' })
+const editingOntology = ref(null)
+const editingEntity = ref(null)
+const entityForm = reactive({ id: '', name: '', icon: '📄', description: '' })
+const propForm = reactive({ id: '', name: '', type: 'string', required: false, constraints: [], enumValues: [], enumValuesStr: '', example: '' })
+const relationForm = reactive({ id: '', targetEntity: '', type: 'belongsTo', label: '' })
+const propModalOpen = ref(false)
+const relationModalOpen = ref(false)
+const entityModalOpen = ref(false)
+
+const ontoStats = computed(() => ontologies.map(o => ({
+  ...o,
+  entityCount: o.entities?.length || 0,
+  propertyCount: o.entities?.reduce((s, e) => s + (e.properties?.length || 0), 0) || 0,
+  relationCount: o.entities?.reduce((s, e) => s + (e.relations?.length || 0), 0) || 0,
+})))
 
 const dbForm = reactive({
   name: '', type: 'mysql', host: '', port: '3306', database: '', username: '', password: '',
@@ -166,6 +334,20 @@ const dbForm = reactive({
 function agentName(id) {
   const map = { 'agent-assistant': '杨姐的助理', 'agent-certify': '认证专员', 'agent-risk': '预警官', 'agent-declare': '申报管家', 'agent-compliance': '合规师' }
   return map[id] || id
+}
+
+function typeLabel(t) {
+  return { string: '文本', number: '数字', date: '日期', enum: '枚举', boolean: '布尔' }[t] || t
+}
+
+function relTypeLabel(t) {
+  return { belongsTo: '属于', hasMany: '拥有多个', relatesTo: '关联', contains: '包含', references: '引用' }[t] || t
+}
+
+function entityName(id) {
+  if (!editingOntology.value) return id
+  const e = editingOntology.value.entities.find(x => x.id === id)
+  return e ? e.name : id
 }
 
 function simulateUpload() {
@@ -213,6 +395,7 @@ function createOntology() {
     propertyCount: 0,
     relationCount: 0,
     boundAgents: [],
+    entities: [],
     createdAt: new Date().toISOString().slice(0, 10),
     updatedAt: new Date().toISOString().slice(0, 10),
   })
@@ -220,7 +403,101 @@ function createOntology() {
 }
 
 function viewOntology(onto) {
-  // Phase 2: open entity editor
+  editingOntology.value = onto
+  editingEntity.value = (onto.entities && onto.entities.length > 0) ? onto.entities[0] : null
+}
+
+function selectEntity(ent) { editingEntity.value = ent }
+
+function addEntity() {
+  if (!editingOntology.value) return
+  const ent = { id: 'ent-' + Date.now(), name: '新实体', icon: '📄', description: '', properties: [], relations: [] }
+  editingOntology.value.entities.push(ent)
+  editingEntity.value = ent
+}
+
+function deleteEntity(ent) {
+  if (!editingOntology.value) return
+  const idx = editingOntology.value.entities.indexOf(ent)
+  if (idx > -1) {
+    editingOntology.value.entities.splice(idx, 1)
+    editingEntity.value = editingOntology.value.entities.length ? editingOntology.value.entities[0] : null
+  }
+}
+
+function renameEntity(ent) {
+  entityForm.id = ent.id; entityForm.name = ent.name; entityForm.icon = ent.icon; entityForm.description = ent.description
+  entityModalOpen.value = true
+}
+
+function saveEntityRename() {
+  const ent = editingOntology.value.entities.find(e => e.id === entityForm.id)
+  if (ent) { ent.name = entityForm.name; ent.icon = entityForm.icon; ent.description = entityForm.description }
+  entityModalOpen.value = false
+}
+
+function addProperty() {
+  propForm.id = ''; propForm.name = ''; propForm.type = 'string'; propForm.required = false; propForm.constraints = []; propForm.enumValues = []; propForm.enumValuesStr = ''; propForm.example = ''
+  propModalOpen.value = true
+}
+
+function editProperty(prop) {
+  Object.assign(propForm, prop)
+  propModalOpen.value = true
+}
+
+function saveProperty() {
+  if (!editingEntity.value) return
+  const data = { ...propForm }
+  if (data.type === 'enum') {
+    data.enumValues = data.enumValuesStr ? data.enumValuesStr.split(/[,，]\s*/).filter(Boolean) : []
+  } else {
+    data.enumValues = []
+  }
+  delete data.enumValuesStr
+  if (!data.id) {
+    data.id = 'prop-' + Date.now()
+    editingEntity.value.properties.push(data)
+  } else {
+    const p = editingEntity.value.properties.find(x => x.id === data.id)
+    if (p) Object.assign(p, data)
+  }
+  propModalOpen.value = false
+}
+
+function deleteProperty(prop) {
+  if (!editingEntity.value) return
+  const idx = editingEntity.value.properties.indexOf(prop)
+  if (idx > -1) editingEntity.value.properties.splice(idx, 1)
+}
+
+function addRelation() {
+  relationForm.targetEntity = ''; relationForm.type = 'belongsTo'; relationForm.label = ''
+  relationModalOpen.value = true
+}
+
+function editRelation(rel) {
+  Object.assign(relationForm, rel)
+  relationModalOpen.value = true
+}
+
+function saveRelation() {
+  if (!editingEntity.value) return
+  if (!relationForm.label) return
+  if (!relationForm.id) {
+    relationForm.id = 'rel-' + Date.now()
+    editingEntity.value.relations.push({ ...relationForm })
+  } else {
+    const r = editingEntity.value.relations.find(x => x.id === relationForm.id)
+    if (r) Object.assign(r, relationForm)
+  }
+  relationModalOpen.value = false
+}
+
+function deleteRelation(rel) {
+  if (!editingEntity.value) return
+  const idx = editingEntity.value.relations.indexOf(rel)
+  if (idx > -1) editingEntity.value.relations.splice(idx, 1)
 }
 </script>
 
@@ -299,4 +576,41 @@ function viewOntology(onto) {
 .onto-bound { color: #1677ff; }
 .onto-bound-none { color: #d9d9d9; }
 .onto-actions { display: flex; gap: 6px; }
+
+/* ===== 本体编辑器 ===== */
+.onto-editor-toolbar { display: flex; align-items: center; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0; flex-shrink: 0; }
+.onto-editor-title { font-size: 15px; font-weight: 600; color: #1a1a2e; flex: 1; }
+.onto-editor-body { display: flex; gap: 16px; flex: 1; min-height: 0; overflow: hidden; }
+.onto-entity-list { width: 220px; flex-shrink: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; border-right: 1px solid #f0f0f0; padding-right: 12px; }
+.onto-entity-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-radius: 6px; cursor: pointer; transition: all 0.15s; }
+.onto-entity-item:hover { background: #f5f6fa; }
+.entity-active { background: #f0f5ff !important; }
+.entity-item-top { display: flex; align-items: center; gap: 6px; }
+.entity-icon { font-size: 16px; }
+.entity-name { font-size: 13px; font-weight: 500; color: #1a1a2e; }
+.entity-counts { font-size: 11px; color: #bfbfbf; }
+.entity-item-actions { display: flex; gap: 2px; opacity: 0; transition: opacity 0.15s; }
+.onto-entity-item:hover .entity-item-actions { opacity: 1; }
+
+.onto-entity-editor { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+.entity-editor-header { margin-bottom: 4px; }
+.editor-entity-name { font-size: 16px; font-weight: 600; color: #1a1a2e; }
+.editor-entity-desc { font-size: 12px; color: #8c8c8c; margin-left: 8px; }
+.editor-section { border: 1px solid #e8e8e8; border-radius: 6px; background: #fff; overflow: hidden; }
+.editor-section-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #fafafa; border-bottom: 1px solid #e8e8e8; font-size: 13px; font-weight: 500; }
+.editor-section-list { padding: 4px 0; }
+.editor-row { display: flex; align-items: center; gap: 8px; padding: 6px 12px; font-size: 13px; border-bottom: 1px solid #f5f5f5; }
+.editor-row:last-child { border-bottom: none; }
+.editor-row:hover { background: #fafafa; }
+.row-name { font-weight: 500; color: #1a1a2e; min-width: 80px; }
+.row-type { color: #8c8c8c; font-size: 12px; background: #f5f5f5; padding: 1px 5px; border-radius: 3px; }
+.row-required { color: #f5222d; font-size: 11px; }
+.row-enum { color: #1677ff; font-size: 11px; }
+.row-example { color: #bfbfbf; font-size: 11px; }
+.row-target { color: #722ed1; font-size: 13px; font-weight: 500; }
+.row-actions { margin-left: auto; display: flex; gap: 2px; opacity: 0; transition: opacity 0.15s; }
+.editor-row:hover .row-actions { opacity: 1; }
+.editor-empty { padding: 20px; text-align: center; font-size: 12px; color: #bfbfbf; }
+.editor-empty-state { display: flex; align-items: center; justify-content: center; gap: 8px; height: 100%; font-size: 14px; color: #bfbfbf; }
+.editor-empty-state .empty-icon { font-size: 24px; }
 </style>
