@@ -45,6 +45,7 @@
             <div class="agent-info">
               <div class="agent-top-row">
                 <span class="agent-name">{{ agent.name }}</span>
+                <span class="agent-time">{{ agent.lastActive }}</span>
                 <span v-if="agent.pendingCount > 0" class="pending-dot">{{ agent.pendingCount > 99 ? '99+' : agent.pendingCount }}</span>
               </div>
               <div class="agent-summary">{{ agent.summary }}</div>
@@ -200,7 +201,7 @@ function switchAgent(agent) {
 
 /* ===== 左侧导航栏 ===== */
 .app-sidebar {
-  width: 220px;
+  width: 260px;
   background: #fff;
   border-right: 1px solid #e8e8e8;
   padding: 12px 0;
@@ -248,8 +249,8 @@ function switchAgent(agent) {
 .agent-entry {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  padding: 9px 10px;
+  gap: 12px;
+  padding: 11px 12px;
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.15s;
@@ -264,18 +265,18 @@ function switchAgent(agent) {
   color: #1677ff;
 }
 
-/* Circular avatar */
+/* Rounded-rectangle avatar */
 .agent-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
   background: #f5f6fa;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 20px;
   flex-shrink: 0;
-  margin-top: 1px;
+  margin-top: 2px;
 }
 
 /* Info area */
@@ -303,6 +304,14 @@ function switchAgent(agent) {
   text-overflow: ellipsis;
   flex: 1;
   min-width: 0;
+}
+
+/* Last active time */
+.agent-time {
+  font-size: 12px;
+  color: #bfbfbf;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* Pending red dot — unread badge style */

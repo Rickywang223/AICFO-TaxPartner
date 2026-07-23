@@ -5,11 +5,11 @@
 
 // ==================== 智能体列表 ====================
 export const agents = [
-  { id: 'agent-assistant',  icon: '👩‍💼', name: '杨姐的助理',  status: 'urgent',  badge: '3项紧急', summary: '今天有3件事需要处理', pendingCount: 0 },
-  { id: 'agent-certify',   icon: '📄', name: '发票认证专员', status: 'warning', badge: '45%完成', summary: '还剩23张待认证', pendingCount: 23 },
-  { id: 'agent-risk',      icon: '⚠️', name: '风险预警官',   status: 'urgent',  badge: '2家高危', summary: '新增1家风险公司', pendingCount: 2 },
-  { id: 'agent-declare',   icon: '📋', name: '申报管家',     status: 'normal',  badge: '96%完成', summary: '距截止还有12天', pendingCount: 0 },
-  { id: 'agent-compliance', icon: '🔍', name: '稽查合规师',  status: 'warning', badge: '新预警',   summary: '税负率1.78%正常', pendingCount: 1 },
+  { id: 'agent-assistant',  icon: '👩‍💼', name: '杨姐的助理',  status: 'urgent',  badge: '3项紧急', summary: '今天有3件事需要处理', pendingCount: 0, lastActive: '刚刚' },
+  { id: 'agent-certify',   icon: '📄', name: '发票认证专员', status: 'warning', badge: '45%完成', summary: '还剩23张待认证', pendingCount: 23, lastActive: '11:30' },
+  { id: 'agent-risk',      icon: '⚠️', name: '风险预警官',   status: 'urgent',  badge: '2家高危', summary: '新增1家风险公司', pendingCount: 2, lastActive: '09:15' },
+  { id: 'agent-declare',   icon: '📋', name: '申报管家',     status: 'normal',  badge: '96%完成', summary: '距截止还有12天', pendingCount: 0, lastActive: '昨天' },
+  { id: 'agent-compliance', icon: '🔍', name: '稽查合规师',  status: 'warning', badge: '新预警',   summary: '税负率1.78%正常', pendingCount: 1, lastActive: '10:42' },
 ]
 
 export function getBadgeColor(status) {
