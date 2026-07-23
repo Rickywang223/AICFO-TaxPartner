@@ -1,34 +1,37 @@
 <template>
   <div class="workspace">
-    <!-- 统一标题栏 -->
-    <div class="workspace-header">
-      <div class="header-left">
-        <span class="header-icon">{{ currentAgent.icon }}</span>
-        <span class="header-name">{{ currentAgent.name }}</span>
-        <span class="header-divider">|</span>
-        <span class="header-summary">{{ currentAgent.summary }}</span>
+    <!-- 白色整体卡片 -->
+    <div class="workspace-card">
+      <!-- 统一标题栏 -->
+      <div class="workspace-header">
+        <div class="header-left">
+          <span class="header-icon">{{ currentAgent.icon }}</span>
+          <span class="header-name">{{ currentAgent.name }}</span>
+          <span class="header-divider">|</span>
+          <span class="header-summary">{{ currentAgent.summary }}</span>
+        </div>
+        <div class="header-right">
+          <a-tag :color="badgeColor" class="header-badge">{{ currentAgent.badge }}</a-tag>
+        </div>
       </div>
-      <div class="header-right">
-        <a-tag :color="badgeColor" class="header-badge">{{ currentAgent.badge }}</a-tag>
-      </div>
-    </div>
 
-    <!-- 工作区主体：聊天 + 看板 -->
-    <div class="workspace-body">
-      <div class="workspace-chat">
-        <ChatPanel
-          :agent="currentAgent"
-          :messages="messages"
-          :sending="sending"
-          @send="handleSend"
-          @action="handleAction"
-        />
-      </div>
-      <div class="workspace-dash">
-        <AgentDashboard
-          :dashboard="currentDashboard"
-          @action="handleAction"
-        />
+      <!-- 工作区主体：聊天 + 看板 -->
+      <div class="workspace-body">
+        <div class="workspace-chat">
+          <ChatPanel
+            :agent="currentAgent"
+            :messages="messages"
+            :sending="sending"
+            @send="handleSend"
+            @action="handleAction"
+          />
+        </div>
+        <div class="workspace-dash">
+          <AgentDashboard
+            :dashboard="currentDashboard"
+            @action="handleAction"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -160,8 +163,19 @@ function handleAction(action) {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 16px 16px 16px 16px;
-  gap: 12px;
+  padding: 16px;
+}
+
+/* 白色整体卡片 */
+.workspace-card {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
 }
 
 /* 统一标题栏 */
@@ -170,11 +184,9 @@ function handleAction(action) {
   align-items: center;
   justify-content: space-between;
   height: 52px;
-  background: #fff;
-  border-radius: 10px;
   padding: 0 16px;
   flex-shrink: 0;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  border-bottom: 1px solid #f0f0f0;
 }
 .header-left {
   display: flex;
@@ -211,26 +223,18 @@ function handleAction(action) {
   display: flex;
   flex: 1;
   min-height: 0;
-  gap: 12px;
 }
 
 .workspace-chat {
   width: 380px;
   min-width: 320px;
   flex-shrink: 0;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-  overflow: hidden;
+  border-right: 1px solid #f0f0f0;
 }
 
 .workspace-dash {
   flex: 1;
   min-width: 0;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-  overflow: hidden;
 }
 
 @media (max-width: 1280px) {
