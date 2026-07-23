@@ -5,11 +5,11 @@
 
 // ==================== 智能体列表 ====================
 export const agents = [
-  { id: 'agent-assistant',  icon: '👩‍💼', name: '杨姐的助理',  status: 'urgent',  badge: '3项紧急', summary: '今天有3件事需要处理', pendingCount: 0, lastActive: '刚刚' },
-  { id: 'agent-certify',   icon: '📄', name: '发票认证专员', status: 'warning', badge: '45%完成', summary: '还剩23张待认证', pendingCount: 23, lastActive: '11:30' },
-  { id: 'agent-risk',      icon: '⚠️', name: '风险预警官',   status: 'urgent',  badge: '2家高危', summary: '新增1家风险公司', pendingCount: 2, lastActive: '09:15' },
-  { id: 'agent-declare',   icon: '📋', name: '申报管家',     status: 'normal',  badge: '96%完成', summary: '距截止还有12天', pendingCount: 0, lastActive: '昨天' },
-  { id: 'agent-compliance', icon: '🔍', name: '稽查合规师',  status: 'warning', badge: '新预警',   summary: '税负率1.78%正常', pendingCount: 1, lastActive: '10:42' },
+  { id: 'agent-assistant',  icon: '👩‍💼', name: '杨姐的助理',  status: 'urgent',  badge: '3项紧急', summary: '今天有3件事需要处理', pendingCount: 0, lastActive: '刚刚',    description: '你的专属税务工作助手',             tabs: ['总览', '今日待办', '快捷操作'] },
+  { id: 'agent-certify',   icon: '📄', name: '发票认证专员', status: 'warning', badge: '45%完成', summary: '还剩23张待认证', pendingCount: 23, lastActive: '11:30',  description: '专门负责发票认证的智能体',         tabs: ['总览', '发票队列', '认证记录', '设置'] },
+  { id: 'agent-risk',      icon: '⚠️', name: '风险预警官',   status: 'urgent',  badge: '2家高危', summary: '新增1家风险公司', pendingCount: 2, lastActive: '09:15',  description: '7×24小时监控企业税务风险',          tabs: ['总览', '风险列表', '预警规则', '设置'] },
+  { id: 'agent-declare',   icon: '📋', name: '申报管家',     status: 'normal',  badge: '96%完成', summary: '距截止还有12天', pendingCount: 0, lastActive: '昨天',   description: '自动跟踪各税种申报进度',            tabs: ['总览', '申报进度', '历史申报', '设置'] },
+  { id: 'agent-compliance', icon: '🔍', name: '稽查合规师',  status: 'warning', badge: '新预警',   summary: '税负率1.78%正常', pendingCount: 1, lastActive: '10:42',  description: '专业税务稽查与合规分析',            tabs: ['总览', '检查清单', '合规报告', '设置'] },
 ]
 
 export function getBadgeColor(status) {
@@ -54,6 +54,7 @@ export const agentDashboards = {
     sections: [
       {
         id: 'danger-invoices',
+        tab: '总览',
         title: '🔥 高危发票（3张待处理）',
         type: 'invoice-list',
         items: [

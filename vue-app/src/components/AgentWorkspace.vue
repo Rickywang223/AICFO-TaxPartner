@@ -2,16 +2,19 @@
   <div class="workspace">
     <!-- 白色整体卡片 -->
     <div class="workspace-card">
-      <!-- 统一标题栏 -->
+      <!-- 统一标题栏（双行） -->
       <div class="workspace-header">
-        <div class="header-left">
-          <span class="header-icon">{{ currentAgent.icon }}</span>
-          <span class="header-name">{{ currentAgent.name }}</span>
-          <span class="header-divider">|</span>
-          <span class="header-summary">{{ currentAgent.summary }}</span>
-        </div>
-        <div class="header-right">
-          <a-tag :color="badgeColor" class="header-badge">{{ currentAgent.badge }}</a-tag>
+        <div class="header-top">
+          <div class="header-top-left">
+            <span class="header-icon">{{ currentAgent.icon }}</span>
+            <span class="header-name">{{ currentAgent.name }}</span>
+            <span class="header-desc">{{ currentAgent.description }}</span>
+          </div>
+          <div class="header-top-right">
+            <button class="header-btn" title="聊天记录">📋</button>
+            <button class="header-btn" title="搜索">🔍</button>
+            <button class="header-btn" title="设置">⚙️</button>
+          </div>
         </div>
       </div>
 
@@ -29,7 +32,10 @@
         <div class="workspace-dash">
           <AgentDashboard
             :dashboard="currentDashboard"
+            :active-tab="activeTab"
+            :tabs="currentAgent.tabs"
             @action="handleAction"
+            @tab-change="activeTab = $event"
           />
         </div>
       </div>
@@ -47,13 +53,11 @@ import {
   agentDashboards,
   initialMessages,
   getChatResponse,
-  getBadgeColor,
 } from '../mockData.js'
 
 const route = useRoute()
 
 const agentId = computed(() => route.params.agentId || 'agent-assistant')
-const badgeColor = computed(() => getBadgeColor(currentAgent.value.status))
 
 const currentAgent = computed(() => {
   return agents.find(a => a.id === agentId.value) || agents[0]
@@ -63,10 +67,14 @@ const currentDashboard = computed(() => {
   return agentDashboards[agentId.value] || agentDashboards['agent-assistant']
 })
 
+// Active tab for dashboard switching
+const activeTab = ref('总览')
 const messages = ref([])
 const sending = ref(false)
 
+// Reset tab when agent changes
 watch(agentId, () => {
+  activeTab.value = '总览'
   resetMessages()
 }, { immediate: true })
 
@@ -178,17 +186,18 @@ function handleAction(action) {
   overflow: hidden;
 }
 
-/* 统一标题栏 */
+/* 统一标题栏（双行） */
 .workspace-header {
+  flex-shrink: 0;
+  border-bottom: 1px solid #f0f0f0;
+  padding: 8px 16px 0;
+}
+.header-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 52px;
-  padding: 0 16px;
-  flex-shrink: 0;
-  border-bottom: 1px solid #f0f0f0;
 }
-.header-left {
+.header-top-left {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -201,21 +210,27 @@ function handleAction(action) {
   font-weight: 600;
   color: #1a1a2e;
 }
-.header-divider {
-  color: #e8e8e8;
-  font-size: 14px;
-  font-weight: 200;
-}
-.header-summary {
+.header-desc {
   font-size: 13px;
   color: #8c8c8c;
 }
-.header-right {
+.header-top-right {
   display: flex;
   align-items: center;
+  gap: 2px;
 }
-.header-badge {
-  font-size: 12px;
+.header-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  line-height: 1;
+  transition: background 0.15s;
+}
+.header-btn:hover {
+  background: #f0f0f0;
 }
 
 /* 工作区主体 */
