@@ -170,7 +170,7 @@ conversations = {}
 
 @app.route('/')
 def index():
-    return redirect('/vue-app/#/workspace/agent-assistant')
+    return redirect('/vue-app/#/cockpit')
 
 # ========================================
 # Agent Chat API

@@ -22,47 +22,47 @@
     </header>
 
     <div class="app-body">
-      <!-- 左侧导航栏 -->
+      <!-- 左侧导航栏：三段式 -->
       <aside class="app-sidebar">
-        <div class="section-label">🤖 我的智能体</div>
-        <div class="agent-list">
-          <div
-            v-for="agent in agents"
-            :key="agent.id"
-            class="agent-item"
-            :class="{ 'agent-selected': isAgentActive(agent.id) }"
-            @click="switchAgent(agent)"
-          >
-            <div class="agent-top">
-              <span class="agent-icon">{{ agent.icon }}</span>
-              <span class="agent-name">{{ agent.name }}</span>
-              <a-tag
-                :color="badgeColor(agent.status)"
-                size="small"
-                class="agent-badge"
-              >{{ agent.badge }}</a-tag>
-            </div>
-            <div class="agent-summary">{{ agent.summary }}</div>
+
+        <!-- 第一部分：智能体驾驶舱 -->
+        <div class="nav-section">
+          <router-link to="/cockpit" class="nav-item cockpit-item" :class="{ 'nav-active': $route.path === '/cockpit' }">
+            <span class="nav-icon">🏁</span>
+            <span class="nav-name">智能体驾驶舱</span>
+          </router-link>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <!-- 第二部分：智能体列表 -->
+        <div class="nav-section agent-section">
+          <div v-for="agent in sortedAgents" :key="agent.id" class="nav-item agent-nav-item"
+            :class="{ 'nav-active': isAgentActive(agent.id) }" @click="switchAgent(agent)">
+            <span class="nav-icon">{{ agent.icon }}</span>
+            <span class="nav-name">{{ agent.name }}</span>
+            <span v-if="agent.pendingCount > 0" class="pending-dot">{{ agent.pendingCount > 99 ? '99+' : agent.pendingCount }}</span>
           </div>
         </div>
 
-        <div class="sidebar-divider"></div>
+        <div class="section-divider"></div>
 
-        <div class="section-label">🛠 工具</div>
-        <div class="tool-list">
-          <router-link to="/capabilities" class="tool-item" :class="{ 'tool-active': $route.path === '/capabilities' }">
-            <span class="tool-icon">🔧</span>
-            <span class="tool-name">能力中心</span>
+        <!-- 第三部分：系统模块 -->
+        <div class="nav-section">
+          <router-link to="/capabilities" class="nav-item" :class="{ 'nav-active': $route.path === '/capabilities' }">
+            <span class="nav-icon">⚡</span>
+            <span class="nav-name">能力中心</span>
           </router-link>
-          <router-link to="/knowledge" class="tool-item" :class="{ 'tool-active': $route.path === '/knowledge' }">
-            <span class="tool-icon">📚</span>
-            <span class="tool-name">知识库</span>
+          <router-link to="/knowledge" class="nav-item" :class="{ 'nav-active': $route.path === '/knowledge' }">
+            <span class="nav-icon">📚</span>
+            <span class="nav-name">知识库</span>
           </router-link>
-          <router-link to="/agent-manage" class="tool-item" :class="{ 'tool-active': $route.path === '/agent-manage' }">
-            <span class="tool-icon">🤖</span>
-            <span class="tool-name">管理智能体</span>
+          <router-link to="/agent-manage" class="nav-item" :class="{ 'nav-active': $route.path === '/agent-manage' }">
+            <span class="nav-icon">🤖</span>
+            <span class="nav-name">管理智能体</span>
           </router-link>
         </div>
+
       </aside>
 
       <!-- 主内容区 -->
@@ -76,11 +76,13 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { agents, getBadgeColor as badgeColor } from './mockData.js'
+import { getSortedAgents } from './mockData.js'
 import logoUrl from './assets/logo.jpg'
 
 const route = useRoute()
 const router = useRouter()
+
+const sortedAgents = getSortedAgents()
 
 function isAgentActive(agentId) {
   return route.path.startsWith('/workspace/') && route.params.agentId === agentId
@@ -192,78 +194,34 @@ function switchAgent(agent) {
   width: 220px;
   background: #fff;
   border-right: 1px solid #e8e8e8;
-  padding: 16px 0;
+  padding: 12px 0;
   overflow-y: auto;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Section divider */
+.section-divider {
+  height: 1px;
+  background: #f0f0f0;
+  margin: 8px 12px;
   flex-shrink: 0;
 }
 
-.section-label {
-  font-size: 12px;
-  color: #8c8c8c;
-  padding: 4px 16px 8px;
-  font-weight: 500;
-  letter-spacing: 0.5px;
-}
-
-/* Agent List */
-.agent-list {
+/* Navigation sections */
+.nav-section {
   padding: 0 8px;
+  flex-shrink: 0;
 }
-.agent-item {
-  padding: 8px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-  margin-bottom: 2px;
-  transition: background 0.15s;
-}
-.agent-item:hover {
-  background: #f5f6fa;
-}
-.agent-selected {
-  background: #f0f5ff !important;
-}
-.agent-selected .agent-name {
-  color: #1677ff;
-}
-.agent-top {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.agent-icon {
-  font-size: 18px;
-}
-.agent-name {
-  font-size: 13px;
-  font-weight: 500;
-  color: #1a1a2e;
-}
-.agent-badge {
-  margin-left: auto;
-  font-size: 11px;
-  line-height: 18px;
-}
-.agent-summary {
-  font-size: 12px;
-  color: #8c8c8c;
-  margin-top: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.agent-section {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
-/* Divider */
-.sidebar-divider {
-  height: 1px;
-  background: #f0f0f0;
-  margin: 12px 16px;
-}
-
-/* Tool List */
-.tool-list {
-  padding: 0 8px;
-}
-.tool-item {
+/* Unified nav item */
+.nav-item {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -275,20 +233,59 @@ function switchAgent(agent) {
   font-size: 13px;
   transition: background 0.15s;
   margin-bottom: 2px;
+  position: relative;
 }
-.tool-item:hover {
+.nav-item:hover {
   background: #f5f6fa;
   color: #1a1a2e;
 }
-.tool-active {
+.nav-active {
   background: #f0f5ff !important;
   color: #1677ff !important;
+  font-weight: 500;
 }
-.tool-icon {
-  font-size: 14px;
+.nav-icon {
+  font-size: 16px;
+  width: 22px;
+  text-align: center;
+  flex-shrink: 0;
 }
-.tool-name {
-  font-size: 13px;
+.nav-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Cockpit item special styling */
+.cockpit-item {
+  background: #fff;
+}
+
+/* Pending red dot */
+.pending-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: #f5222d;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* Agent section scroll */
+.agent-section::-webkit-scrollbar {
+  width: 4px;
+}
+.agent-section::-webkit-scrollbar-thumb {
+  background: #d9d9d9;
+  border-radius: 2px;
 }
 
 /* ===== 主内容区 ===== */

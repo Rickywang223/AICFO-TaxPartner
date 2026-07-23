@@ -5,15 +5,39 @@
 
 // ==================== 智能体列表 ====================
 export const agents = [
-  { id: 'agent-assistant',  icon: '👩‍💼', name: '杨姐的助理',  status: 'urgent',  badge: '3项紧急', summary: '今天有3件事需要处理' },
-  { id: 'agent-certify',   icon: '📄', name: '发票认证专员', status: 'warning', badge: '45%完成', summary: '还剩23张待认证' },
-  { id: 'agent-risk',      icon: '⚠️', name: '风险预警官',   status: 'urgent',  badge: '2家高危', summary: '新增1家风险公司' },
-  { id: 'agent-declare',   icon: '📋', name: '申报管家',     status: 'normal',  badge: '96%完成', summary: '距截止还有12天' },
-  { id: 'agent-compliance', icon: '🔍', name: '稽查合规师',  status: 'warning', badge: '新预警',   summary: '税负率1.78%正常' },
+  { id: 'agent-assistant',  icon: '👩‍💼', name: '杨姐的助理',  status: 'urgent',  badge: '3项紧急', summary: '今天有3件事需要处理', pendingCount: 0 },
+  { id: 'agent-certify',   icon: '📄', name: '发票认证专员', status: 'warning', badge: '45%完成', summary: '还剩23张待认证', pendingCount: 23 },
+  { id: 'agent-risk',      icon: '⚠️', name: '风险预警官',   status: 'urgent',  badge: '2家高危', summary: '新增1家风险公司', pendingCount: 2 },
+  { id: 'agent-declare',   icon: '📋', name: '申报管家',     status: 'normal',  badge: '96%完成', summary: '距截止还有12天', pendingCount: 0 },
+  { id: 'agent-compliance', icon: '🔍', name: '稽查合规师',  status: 'warning', badge: '新预警',   summary: '税负率1.78%正常', pendingCount: 1 },
 ]
 
 export function getBadgeColor(status) {
   return status === 'urgent' ? 'red' : status === 'warning' ? 'orange' : 'green'
+}
+
+// 按待办数降序排列（有红点的排上面）
+export function getSortedAgents() {
+  return [...agents].sort((a, b) => b.pendingCount - a.pendingCount)
+}
+
+// ==================== 智能体驾驶舱数据 ====================
+export const cockpitData = {
+  total: 5,
+  running: 4,
+  stopped: 1,
+  completedToday: 12,
+  pendingToday: 26,
+  abnormalAgents: [
+    { id: 'agent-risk', name: '风险预警官', issue: '数据源断开' },
+  ],
+  agentStatuses: [
+    { id: 'agent-assistant',  name: '杨姐的助理',  status: 'running',  lastActive: '刚刚' },
+    { id: 'agent-certify',   name: '发票认证专员', status: 'running',  lastActive: '3分钟前' },
+    { id: 'agent-risk',      name: '风险预警官',   status: 'stopped',  lastActive: '2小时前' },
+    { id: 'agent-declare',   name: '申报管家',     status: 'running',  lastActive: '10分钟前' },
+    { id: 'agent-compliance', name: '稽查合规师',  status: 'running',  lastActive: '30分钟前' },
+  ],
 }
 
 // ==================== 各智能体 Dashboard 数据 ====================
