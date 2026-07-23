@@ -1,254 +1,221 @@
 <template>
-  <div>
-    <!-- 面包屑 + 动作栏 -->
-    <div class="page-header">
-      <div>
-        <h2 class="page-title">🔧 能力中心</h2>
-        <p class="page-subtitle">管理智能体的各项能力，配置执行流程和触发方式</p>
-      </div>
+  <div class="tool-page">
+    <!-- Header -->
+    <div class="tool-header">
+      <h2 class="tool-title">🔧 能力中心</h2>
       <a-button type="primary" @click="showCreateModal">+ 新建能力</a-button>
     </div>
 
-    <!-- 分类标签 -->
-    <div class="cat-tabs">
-      <a-tag
-        v-for="cat in categories"
-        :key="cat.id"
-        :color="activeCat === cat.name ? 'blue' : 'default'"
-        :class="{ 'cat-tag-active': activeCat === cat.name }"
-        style="cursor: pointer; margin-bottom: 4px;"
-        @click="activeCat = cat.name"
-      >
-        {{ cat.icon }} {{ cat.name }}
-      </a-tag>
-    </div>
+    <div class="tool-body">
+      <!-- Left: Category Tree -->
+      <div class="cat-tree">
+        <div
+          v-for="cat in categories"
+          :key="cat.id"
+          class="cat-node"
+          :class="{ 'cat-active': activeCat === cat.id }"
+          @click="activeCat = cat.id"
+        >
+          <span class="cat-icon">{{ cat.icon }}</span>
+          <span class="cat-name">{{ cat.name }}</span>
+        </div>
+        <div class="cat-search">
+          <span class="search-icon">🔍</span>
+          <input v-model="searchQuery" type="text" class="search-input" placeholder="搜索能力..." />
+        </div>
+      </div>
 
-    <!-- 能力表格 -->
-    <a-card :loading="loading" :body-style="{ padding: '12px' }">
-      <a-table
-        :dataSource="filteredCapabilities"
-        :columns="columns"
-        :pagination="false"
-        :scroll="{ x: 700 }"
-        rowKey="id"
-        size="small"
-      >
-        <template #bodyCell="{ column, record }">
-          <!-- 名称列 -->
-          <template v-if="column.key === 'name'">
-            <span style="font-weight: 500; font-size: 13px;">{{ record.icon }} {{ record.name }}</span>
-          </template>
-          <!-- 类型列 -->
-          <template v-else-if="column.key === 'type'">
-            <a-tag :color="typeColor(record.type)" style="font-size: 11px;">
-              {{ typeLabel(record.type) }}
-            </a-tag>
-          </template>
-          <!-- 状态列 -->
-          <template v-else-if="column.key === 'status'">
-            <a-badge :status="record.status === 'enabled' ? 'success' : 'default'" :text="record.status === 'enabled' ? '已启用' : '已禁用'" />
-          </template>
-          <!-- 绑定智能体列 -->
-          <template v-else-if="column.key === 'bound'">
-            <a-tag v-if="record.boundAgents?.length" color="blue" style="font-size: 11px;">
-              被 {{ record.boundAgents.length }} 个智能体使用
-            </a-tag>
-            <span v-else style="color: #bfbfbf; font-size: 12px;">未绑定</span>
-          </template>
-          <!-- 操作列 -->
-          <template v-else-if="column.key === 'action'">
-            <a-space>
-              <a @click="editCapability(record)">📝 编辑</a>
-              <a-popconfirm
-                title="确认删除此能力？"
-                @confirm="deleteCapability(record.id)"
-              >
-                <a style="color: #ff4d4f;">🗑 删除</a>
-              </a-popconfirm>
-            </a-space>
-          </template>
-        </template>
-      </a-table>
-    </a-card>
-
-    <!-- 新建/编辑对话框 -->
-    <a-modal
-      v-model:open="modalOpen"
-      :title="isEditing ? '编辑能力' : '新建能力'"
-      :confirm-loading="saving"
-      @ok="saveCapability"
-      @cancel="modalOpen = false"
-      width="600px"
-      ok-text="💾 保存"
-      cancel-text="取消"
-    >
-      <a-form :model="formData" layout="vertical">
-        <a-row :gutter="16">
-          <a-col :span="16">
-            <a-form-item label="能力名称">
-              <a-input v-model:value="formData.name" placeholder="如：发票合规检查" />
-            </a-form-item>
-          </a-col>
-          <a-col :span="8">
-            <a-form-item label="执行类型">
-              <a-select v-model:value="formData.type">
-                <a-select-option value="auto">⚡ 自动执行</a-select-option>
-                <a-select-option value="ai_assisted">🧠 AI辅助</a-select-option>
-                <a-select-option value="manual">👤 人工确认</a-select-option>
-                <a-select-option value="connection">🔗 连接</a-select-option>
-              </a-select>
-            </a-form-item>
-          </a-col>
-        </a-row>
-        <a-form-item label="能力描述">
-          <a-textarea v-model:value="formData.description" rows="2" placeholder="能力概述..." />
-        </a-form-item>
-        <a-form-item label="执行步骤">
-          <div v-for="(step, i) in formData.steps" :key="i" style="display: flex; gap: 8px; margin-bottom: 6px;">
-            <a-input v-model:value="step.name" placeholder="步骤名称" style="flex: 2;" />
-            <a-input v-model:value="step.skill" placeholder="选择Skill..." style="flex: 3;" />
-            <a-button type="text" danger @click="formData.steps.splice(i, 1)">✕</a-button>
+      <!-- Right: Capability Cards -->
+      <div class="cap-list">
+        <!-- Category section headers -->
+        <template v-for="(catCap, cIdx) in groupedCaps" :key="cIdx">
+          <div class="cap-section-header">
+            <span class="cap-section-icon">{{ catCap.catIcon }}</span>
+            <span class="cap-section-name">{{ catCap.catName }}</span>
+            <span class="cap-section-count">{{ catCap.items.length }} 项</span>
           </div>
-          <a-button type="dashed" block @click="formData.steps.push({ name:'', skill:'' })" style="margin-top: 4px;">
-            + 添加步骤
-          </a-button>
-        </a-form-item>
-        <a-row :gutter="16">
-          <a-col :span="12">
-            <a-form-item label="触发方式">
-              <a-select v-model:value="formData.trigger">
-                <a-select-option value="manual">手动</a-select-option>
-                <a-select-option value="scheduled">定时</a-select-option>
-                <a-select-option value="event">事件触发</a-select-option>
-              </a-select>
-            </a-form-item>
-          </a-col>
-          <a-col :span="12">
-            <a-form-item label="输出格式">
-              <a-select v-model:value="formData.outputFormat">
-                <a-select-option value="text">文本</a-select-option>
-                <a-select-option value="json">JSON</a-select-option>
-                <a-select-option value="table">表格</a-select-option>
-              </a-select>
-            </a-form-item>
-          </a-col>
-        </a-row>
-      </a-form>
-    </a-modal>
+
+          <div class="cap-grid">
+            <div v-for="cap in catCap.items" :key="cap.id" class="cap-card" :class="'cap-type-' + cap.type">
+              <!-- Top: name + status -->
+              <div class="cap-card-top">
+                <div class="cap-name-row">
+                  <span class="cap-icon">{{ cap.icon }}</span>
+                  <span class="cap-name">{{ cap.name }}</span>
+                </div>
+                <a-tag :color="cap.status === 'enabled' ? 'green' : 'default'" size="small">
+                  {{ cap.status === 'enabled' ? '🟢 已启用' : '🟡 已禁用' }}
+                </a-tag>
+              </div>
+
+              <!-- Description -->
+              <div class="cap-desc">{{ cap.description }}</div>
+
+              <!-- MCP specific -->
+              <div v-if="cap.type === 'connection'" class="cap-meta">
+                <div class="meta-row"><span class="meta-label">Endp.</span><span class="meta-value mono">{{ cap.endpoint }}</span></div>
+                <div class="meta-row"><span class="meta-label">状态</span><span class="meta-value" :class="cap.connectionStatus === 'connected' ? 'text-green' : 'text-red'">{{ cap.connectionStatus === 'connected' ? '✅ 已连接' : '❌ 断开' }}</span></div>
+                <div class="meta-row"><span class="meta-label">活跃</span><span class="meta-value">{{ cap.lastActive }}</span></div>
+              </div>
+
+              <!-- Model specific -->
+              <div v-if="cap.type === 'model'" class="cap-meta">
+                <div class="meta-row"><span class="meta-label">供应商</span><span class="meta-value">{{ cap.modelProvider }}</span></div>
+                <div class="meta-row"><span class="meta-label">版本</span><span class="meta-value">{{ cap.modelVersion }}</span></div>
+                <div class="meta-row"><span class="meta-label">温度</span><span class="meta-value">{{ cap.temperature }}</span></div>
+              </div>
+
+              <!-- Channel specific -->
+              <div v-if="cap.type === 'channel'" class="cap-meta">
+                <div class="meta-row"><span class="meta-label">渠道</span><span class="meta-value">{{ channelLabel(cap.channelType) }}</span></div>
+                <div class="meta-row">
+                  <span class="meta-label">配置</span>
+                  <span class="meta-value" :class="cap.channelConfig?.status === 'configured' ? 'text-green' : 'text-orange'">
+                    {{ cap.channelConfig?.status === 'configured' ? '✅ 已配置' : '🟡 未配置' }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Bound agents -->
+              <div class="cap-bound">
+                <template v-if="cap.boundAgents?.length">
+                  <span class="bound-label">绑定:</span>
+                  <span v-for="aid in cap.boundAgents" :key="aid" class="bound-agent-tag">{{ agentName(aid) }}</span>
+                </template>
+                <span v-else class="bound-none">未绑定</span>
+              </div>
+
+              <!-- Actions -->
+              <div class="cap-actions">
+                <a-button size="small" @click="editCapability(cap)">📝 编辑</a-button>
+                <a-button v-if="cap.type === 'connection'" size="small" class="btn-test" @click="testConnection(cap)">🔗 测试连接</a-button>
+                <a-button v-if="cap.type === 'channel' && cap.channelConfig?.status !== 'configured'" size="small" class="btn-config" @click="configureChannel(cap)">⚙️ 配置</a-button>
+                <a-button size="small" :type="cap.status === 'enabled' ? 'default' : 'primary'" @click="toggleCapability(cap)">
+                  {{ cap.status === 'enabled' ? '⏸ 禁用' : '▶ 启用' }}
+                </a-button>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!-- Empty state -->
+        <a-empty v-if="!groupedCaps.length" description="未找到匹配的能力" :image="aEmpty.PRESENTED_IMAGE_SIMPLE" style="margin: 60px 0;" />
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import axios from 'axios'
+import { ref, computed } from 'vue'
+import { Empty as aEmpty } from 'ant-design-vue'
+import { capabilityCategories, capabilities } from '../mockData.js'
 
-const loading = ref(false)
-const capabilities = ref([])
-const categories = ref([])
-const activeCat = ref('全部能力')
-const modalOpen = ref(false)
-const saving = ref(false)
-const isEditing = ref(false)
-const editingId = ref(null)
+const categories = capabilityCategories
+const allCaps = capabilities
+const activeCat = ref('all')
+const searchQuery = ref('')
 
-const formData = ref({
-  name: '', type: 'ai_assisted', description: '', steps: [],
-  trigger: 'manual', outputFormat: 'json',
+const filteredCaps = computed(() => {
+  let list = activeCat.value === 'all'
+    ? allCaps
+    : allCaps.filter(c => c.category === activeCat.value)
+  if (searchQuery.value) {
+    const q = searchQuery.value.toLowerCase()
+    list = list.filter(c => c.name.toLowerCase().includes(q) || c.description.toLowerCase().includes(q))
+  }
+  return list
 })
 
-const columns = [
-  { title: '能力名称', dataIndex: 'name', key: 'name', width: 200 },
-  { title: '类型', dataIndex: 'type', key: 'type', width: 120 },
-  { title: '描述', dataIndex: 'description', key: 'desc', ellipsis: true },
-  { title: '状态', dataIndex: 'status', key: 'status', width: 100 },
-  { title: '绑定', key: 'bound', width: 150 },
-  { title: '操作', key: 'action', width: 150 },
-]
-
-const filteredCapabilities = computed(() => {
-  return activeCat.value === '全部能力'
-    ? capabilities.value
-    : capabilities.value.filter(c => c.category === activeCat.value)
+const groupedCaps = computed(() => {
+  const groups = []
+  for (const cat of categories) {
+    if (cat.id === 'all') continue
+    const items = filteredCaps.value.filter(c => c.category === cat.id)
+    if (items.length) {
+      groups.push({ catId: cat.id, catName: cat.name, catIcon: cat.icon, items })
+    }
+  }
+  return groups
 })
 
-function typeColor(type) {
-  return { auto: 'blue', ai_assisted: 'purple', manual: 'orange', connection: 'cyan' }[type] || 'default'
-}
-function typeLabel(type) {
-  return { auto: '⚡自动执行', ai_assisted: '🧠AI辅助', manual: '👤人工确认', connection: '🔗连接' }[type] || type
+function agentName(id) {
+  const map = { 'agent-assistant': '杨姐的助理', 'agent-certify': '认证专员', 'agent-risk': '预警官', 'agent-declare': '申报管家', 'agent-compliance': '合规师' }
+  return map[id] || id
 }
 
-async function loadCapabilities() {
-  loading.value = true
-  try {
-    const res = await axios.get('/api/capabilities')
-    capabilities.value = res.data
-  } catch (e) { console.error(e) }
-  finally { loading.value = false }
-}
-
-async function loadCategories() {
-  try {
-    const res = await axios.get('/api/cap-categories')
-    categories.value = res.data
-  } catch (e) { console.error(e) }
+function channelLabel(type) {
+  return { feishu: '飞书', dingtalk: '钉钉', wecom: '企微', sms: '短信' }[type] || type
 }
 
 function showCreateModal() {
-  isEditing.value = false
-  editingId.value = null
-  formData.value = { name: '', type: 'ai_assisted', description: '', steps: [], trigger: 'manual', outputFormat: 'json' }
-  modalOpen.value = true
+  // Phase 2: implement modal
 }
 
 function editCapability(cap) {
-  isEditing.value = true
-  editingId.value = cap.id
-  formData.value = {
-    name: cap.name, type: cap.type, description: cap.description,
-    steps: cap.steps?.map(s => ({ ...s })) || [],
-    trigger: cap.trigger, outputFormat: cap.outputFormat,
-  }
-  modalOpen.value = true
+  // Phase 2: implement edit modal
 }
 
-async function saveCapability() {
-  saving.value = true
-  try {
-    const payload = { ...formData.value, category: '全部能力' }
-    if (isEditing.value && editingId.value) {
-      await axios.put(`/api/capabilities/${editingId.value}`, payload)
-    } else {
-      await axios.post('/api/capabilities', payload)
-    }
-    modalOpen.value = false
-    await loadCapabilities()
-  } catch (e) { console.error(e) }
-  finally { saving.value = false }
+function testConnection(cap) {
+  alert(`测试连接: ${cap.name}\nEndpoint: ${cap.endpoint}`)
 }
 
-async function deleteCapability(id) {
-  try {
-    await axios.delete(`/api/capabilities/${id}`)
-    await loadCapabilities()
-  } catch (e) { console.error(e) }
+function configureChannel(cap) {
+  alert(`配置通道: ${cap.name}`)
 }
 
-onMounted(() => {
-  loadCapabilities()
-  loadCategories()
-})
+function toggleCapability(cap) {
+  cap.status = cap.status === 'enabled' ? 'disabled' : 'enabled'
+}
 </script>
 
 <style scoped>
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 16px;
-}
-.page-title { font-size: 20px; font-weight: 600; margin: 0; }
-.page-subtitle { font-size: 13px; color: #8c8c8c; margin: 4px 0 0; }
-.cat-tabs { margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 4px; }
-.cat-tag-active { font-weight: 600; }
+.tool-page { padding: 24px; height: 100%; display: flex; flex-direction: column; }
+.tool-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-shrink: 0; }
+.tool-title { font-size: 18px; font-weight: 600; margin: 0; }
+.tool-body { display: flex; gap: 20px; flex: 1; min-height: 0; }
+
+/* Left: Category Tree */
+.cat-tree { width: 180px; flex-shrink: 0; display: flex; flex-direction: column; gap: 2px; }
+.cat-node { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-radius: 6px; cursor: pointer; transition: all 0.15s; color: #595959; font-size: 13px; }
+.cat-node:hover { background: #f5f6fa; color: #1a1a2e; }
+.cat-active { background: #f0f5ff !important; color: #1677ff !important; font-weight: 500; }
+.cat-icon { font-size: 15px; width: 20px; text-align: center; }
+.cat-search { margin-top: 16px; display: flex; align-items: center; gap: 6px; padding: 6px 10px; border: 1px solid #e8e8e8; border-radius: 6px; }
+.search-icon { font-size: 13px; }
+.search-input { border: none; outline: none; flex: 1; font-size: 12px; background: transparent; }
+.search-input::placeholder { color: #bfbfbf; }
+
+/* Right: Capability List */
+.cap-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+.cap-section-header { display: flex; align-items: center; gap: 8px; padding: 8px 0; font-size: 13px; font-weight: 600; color: #1a1a2e; border-bottom: 1px solid #f0f0f0; }
+.cap-section-count { font-size: 12px; color: #bfbfbf; font-weight: 400; margin-left: auto; }
+.cap-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 10px; margin-bottom: 8px; }
+
+/* Card */
+.cap-card { background: #fff; border: 1px solid #e8e8e8; border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 8px; transition: box-shadow 0.2s; }
+.cap-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.cap-type-connection { border-left: 3px solid #1677ff; }
+.cap-type-model { border-left: 3px solid #722ed1; }
+.cap-type-channel { border-left: 3px solid #13c2c2; }
+
+.cap-card-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.cap-name-row { display: flex; align-items: center; gap: 6px; }
+.cap-icon { font-size: 16px; }
+.cap-name { font-size: 14px; font-weight: 600; color: #1a1a2e; }
+.cap-desc { font-size: 12px; color: #8c8c8c; line-height: 1.4; }
+.cap-meta { display: flex; flex-direction: column; gap: 3px; background: #fafafa; padding: 8px 10px; border-radius: 4px; }
+.meta-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.meta-label { color: #8c8c8c; width: 48px; flex-shrink: 0; }
+.meta-value { color: #595959; }
+.mono { font-family: 'SFMono-Regular', Consolas, monospace; font-size: 11px; word-break: break-all; }
+.text-green { color: #52c41a; }
+.text-red { color: #f5222d; }
+.text-orange { color: #fa8c16; }
+.cap-bound { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; font-size: 12px; }
+.bound-label { color: #8c8c8c; }
+.bound-agent-tag { display: inline-block; background: #f0f5ff; color: #1677ff; padding: 1px 6px; border-radius: 3px; font-size: 11px; }
+.bound-none { color: #d9d9d9; font-size: 12px; }
+.cap-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+.btn-test { border-color: #1677ff; color: #1677ff; }
+.btn-config { border-color: #13c2c2; color: #13c2c2; }
 </style>

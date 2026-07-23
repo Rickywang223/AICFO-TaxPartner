@@ -56,13 +56,13 @@
         </div>
 
         <div class="section-divider">
-          <span class="divider-label">系统模块</span>
+          <span class="divider-label">工具</span>
         </div>
 
-        <!-- 第三部分：系统模块 -->
+        <!-- 第三部分：工具 -->
         <div class="nav-section">
           <router-link to="/capabilities" class="nav-item" :class="{ 'nav-active': $route.path === '/capabilities' }">
-            <span class="nav-icon">⚡</span>
+            <span class="nav-icon">🔧</span>
             <span class="nav-name">能力中心</span>
           </router-link>
           <router-link to="/knowledge" class="nav-item" :class="{ 'nav-active': $route.path === '/knowledge' }">
@@ -71,7 +71,7 @@
           </router-link>
           <router-link to="/agent-manage" class="nav-item" :class="{ 'nav-active': $route.path === '/agent-manage' }">
             <span class="nav-icon">🤖</span>
-            <span class="nav-name">管理智能体</span>
+            <span class="nav-name">智能体管理</span>
           </router-link>
         </div>
 

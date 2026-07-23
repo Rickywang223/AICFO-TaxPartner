@@ -610,9 +610,56 @@ export const agentKnowledge = {
   'agent-compliance': {
     documents: [
       { id: 'doc-1', name: '税务稽查条例汇编.pdf', type: 'application/pdf', size: '8.2 MB', status: 'indexed', uploadedAt: '2026-07-01', chunks: 135 },
-    ],
-    dataSources: [
-      { id: 'ds-1', name: '法规数据库', type: 'mysql', host: '192.168.1.150', dbName: 'regulations', status: 'connected' },
-    ],
-  },
-}
+ ],
+ dataSources: [
+   { id: 'ds-1', name: '法规数据库', type: 'mysql', host: '192.168.1.150', dbName: 'regulations', status: 'connected' },
+ ],
+ },
+ }
+
+ // ==================== 工具系统 · 能力中心数据 ====================
+
+
+export const capabilityCategories = [
+  { id: 'all',    name: '全部能力', icon: '📁', builtIn: true },
+  { id: 'mcp',    name: 'MCP服务',  icon: '🔌', builtIn: true },
+  { id: 'model',  name: '大模型',   icon: '🤖', builtIn: true },
+  { id: 'channel',name: '聊天通道', icon: '💬', builtIn: true },
+]
+
+export const capabilities = [
+  { id: 'cap-leq',     name: '乐企直连',     category: 'mcp',    type: 'connection', status: 'enabled',  icon: '🔌', description: '直连乐企平台进行发票认证',  endpoint: 'https://leq-api.example.com/v1',     lastActive: '今日 09:15', connectionStatus: 'connected', boundAgents: ['agent-certify'] },
+  { id: 'cap-king',    name: '金蝶ERP',      category: 'mcp',    type: 'connection', status: 'enabled',  icon: '🔌', description: '连接金蝶ERP获取财务数据',  endpoint: 'https://kingdee-api.example.com',     lastActive: '昨日',       connectionStatus: 'connected', boundAgents: ['agent-assistant', 'agent-declare'] },
+  { id: 'cap-tax-api', name: '税局接口',     category: 'mcp',    type: 'connection', status: 'enabled',  icon: '🔌', description: '对接税局电子发票接口',    endpoint: 'https://tax-api.chinatax.gov.cn/v2', lastActive: '3天前',      connectionStatus: 'connected', boundAgents: ['agent-declare'] },
+  { id: 'cap-claude',  name: 'Claude 4',      category: 'model',  type: 'model',     status: 'enabled',  icon: '🤖', description: 'Anthropic 旗舰模型',      modelProvider: 'Anthropic', modelVersion: 'claude-4',  temperature: 0.3,  maxTokens: 4096, boundAgents: ['agent-assistant', 'agent-certify', 'agent-risk'] },
+  { id: 'cap-gpt',     name: 'GPT-4o',        category: 'model',  type: 'model',     status: 'enabled',  icon: '🤖', description: 'OpenAI 多模态模型',       modelProvider: 'OpenAI',    modelVersion: 'gpt-4o',    temperature: 0.2,  maxTokens: 8192, boundAgents: [] },
+  { id: 'cap-qwen',    name: '通义千问',      category: 'model',  type: 'model',     status: 'disabled', icon: '🤖', description: '阿里云通义千问大模型',    modelProvider: '阿里云',    modelVersion: 'qwen-max',  temperature: 0.1,  maxTokens: 4096, boundAgents: [] },
+  { id: 'cap-feishu',  name: '飞书',          category: 'channel',type: 'channel',   status: 'enabled',  icon: '💬', description: '飞书消息通知渠道',        channelType: 'feishu',   channelConfig: { webhook: 'https://open.feishu.cn/...', secret: '***', status: 'configured' }, boundAgents: ['agent-assistant'] },
+  { id: 'cap-dingtalk',name: '钉钉',          category: 'channel',type: 'channel',   status: 'disabled', icon: '💬', description: '钉钉消息通知渠道',        channelType: 'dingtalk', channelConfig: { webhook: '', secret: '', status: 'unconfigured' }, boundAgents: [] },
+]
+
+export const knowledgeCategories = [
+  { id: 'kb-tax',     name: '财税法规库',   icon: '📁', fileCount: 12, parsedCount: 12, boundAgents: ['agent-assistant', 'agent-declare'],
+    files: [
+      { id: 'file-1', name: '增值税法2026版.pdf',       type: 'pdf',  size: '2.4MB', status: 'parsed',   referencedBy: ['agent-assistant', 'agent-declare'], uploadedAt: '07-16' },
+      { id: 'file-2', name: '企业所得税汇算清缴.docx',   type: 'docx', size: '1.8MB', status: 'parsed',   referencedBy: [],                                      uploadedAt: '07-15' },
+      { id: 'file-3', name: '发票管理办法.pdf',          type: 'pdf',  size: '0.9MB', status: 'parsed',   referencedBy: ['agent-certify'],                         uploadedAt: '07-15' },
+    ] },
+  { id: 'kb-internal', name: '企业内部制度', icon: '📁', fileCount: 5,  parsedCount: 3,  boundAgents: ['agent-declare'],
+    files: [
+      { id: 'file-4', name: '发票管理制度.docx',         type: 'docx', size: '1.2MB', status: 'parsed',   referencedBy: ['agent-declare'], uploadedAt: '07-14' },
+      { id: 'file-5', name: '报销流程.pdf',              type: 'pdf',  size: '0.6MB', status: 'parsing',  referencedBy: [],              uploadedAt: '07-14' },
+    ] },
+  { id: 'kb-standards',name: '行业标准',     icon: '📁', fileCount: 3,  parsedCount: 3,  boundAgents: [],
+    files: [
+      { id: 'file-6', name: '餐饮行业税务指引.pdf',     type: 'pdf',  size: '1.1MB', status: 'parsed',   referencedBy: [],              uploadedAt: '07-10' },
+    ] },
+]
+
+export const managedAgents = [
+  { id: 'agent-assistant',  icon: '👩‍💼', name: '杨姐的助理',   status: 'online',  description: '你的专属税务工作助手',     style: 'professional', capabilities: ['cap-leq', 'cap-king', 'cap-claude'], knowledgeBases: ['kb-tax'],       model: 'Claude 4', temperature: 0.3, stats: { totalConversations: 120, todayConversations: 8, lastActiveAt: '2026-07-23T15:30:00' } },
+  { id: 'agent-certify',    icon: '📄', name: '发票认证专员',  status: 'online',  description: '专门负责发票认证的智能体',   style: 'concise',     capabilities: ['cap-leq', 'cap-tax-api'],                knowledgeBases: ['kb-tax'],       model: 'Claude 4', temperature: 0.2, stats: { totalConversations: 67,  todayConversations: 5,  lastActiveAt: '2026-07-23T11:30:00' } },
+  { id: 'agent-risk',       icon: '⚠️', name: '风险预警官',    status: 'online',  description: '7×24小时监控企业税务风险',   style: 'data',        capabilities: ['cap-leq', 'cap-claude'],                   knowledgeBases: [],               model: 'Claude 4', temperature: 0.1, stats: { totalConversations: 89,  todayConversations: 12, lastActiveAt: '2026-07-23T14:20:00' } },
+  { id: 'agent-declare',    icon: '📋', name: '申报管家',      status: 'paused',  description: '专注税务申报全流程管理',     style: 'professional', capabilities: ['cap-king', 'cap-tax-api'],                knowledgeBases: ['kb-tax', 'kb-internal'], model: 'GPT-4o', temperature: 0.3, stats: { totalConversations: 42,  todayConversations: 0,  lastActiveAt: '2026-07-22T16:00:00' } },
+  { id: 'agent-compliance', icon: '🔍', name: '稽查合规师',    status: 'online',  description: '专注税务稽查合规检查',       style: 'professional', capabilities: ['cap-claude', 'cap-feishu'],                 knowledgeBases: [],               model: 'Claude 4', temperature: 0.3, stats: { totalConversations: 23,  todayConversations: 2,  lastActiveAt: '2026-07-23T10:00:00' } },
+]

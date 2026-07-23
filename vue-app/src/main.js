@@ -7,6 +7,7 @@ import AgentWorkspace from './components/AgentWorkspace.vue'
 import AgentCockpit from './components/AgentCockpit.vue'
 import CapabilityCenter from './components/CapabilityCenter.vue'
 import KnowledgeBase from './components/KnowledgeBase.vue'
+import AgentManager from './components/AgentManager.vue'
 
 const routes = [
   { path: '/', redirect: '/cockpit' },
@@ -14,7 +15,7 @@ const routes = [
   { path: '/workspace/:agentId', component: AgentWorkspace },
   { path: '/capabilities', component: CapabilityCenter },
   { path: '/knowledge', component: KnowledgeBase },
-  { path: '/agent-manage', component: CapabilityCenter },
+  { path: '/agent-manage', component: AgentManager },
 ]
 
 const router = createRouter({
