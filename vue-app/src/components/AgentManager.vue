@@ -20,7 +20,7 @@
               <span class="agent-status" :class="'status-' + agent.status">{{ agent.status === 'online' ? '🟢 在线' : agent.status === 'paused' ? '⏸️ 已暂停' : '🔴 离线' }}</span>
             </div>
             <div class="agent-desc">{{ agent.description }}</div>
-            <div class="agent-meta"><span>能力: {{ agent.capabilities?.length || 0 }}个</span><span>知识库: {{ agent.knowledgeBases?.length || 0 }}个</span><span>模型: {{ agent.model }}</span></div>
+            <div class="agent-meta"><span>能力: {{ agent.capabilities?.length || 0 }}个</span><span>知识库: {{ agent.knowledgeBases?.length || 0 }}个</span><span>本体: {{ agent.ontologies?.length || 0 }}个</span><span>模型: {{ agent.model }}</span></div>
             <div class="agent-stats"><span>最近活跃: {{ formatTime(agent.stats?.lastActiveAt) }}</span><span>总对话: {{ agent.stats?.totalConversations || 0 }}次</span></div>
           </div>
           <div class="agent-card-actions">
@@ -51,6 +51,7 @@
           <a-col :span="12"><a-form-item label="模型"><a-select v-model:value="form.model"><a-select-option value="Claude 4">Claude 4</a-select-option><a-select-option value="GPT-4o">GPT-4o</a-select-option><a-select-option value="通义千问">通义千问</a-select-option></a-select></a-form-item></a-col>
         </a-row>
         <a-form-item label="温度"><a-slider v-model:value="form.temperature" :min="0" :max="1" :step="0.1" /></a-form-item>
+        <a-form-item label="🧠 绑定本体"><a-select v-model:value="form.ontologies" mode="multiple" placeholder="选择本体..." :max-tag-count="3"><a-select-option v-for="o in ontologies" :key="o.id" :value="o.id">{{ o.icon }} {{ o.name }}</a-select-option></a-select></a-form-item>
       </a-form>
     </a-modal>
   </div>
@@ -60,6 +61,7 @@
 import { ref, computed, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { agentList, addAgent, removeAgent, updateAgent } from '../store.js'
+import { ontologies } from '../mockData.js'
 
 const router = useRouter()
 const searchQuery = ref('')
@@ -67,7 +69,7 @@ const modalOpen = ref(false)
 const isEditing = ref(false)
 const editingId = ref(null)
 
-const form = reactive({ name: '', icon: '🤖', description: '', style: 'professional', model: 'Claude 4', temperature: 0.3 })
+const form = reactive({ name: '', icon: '🤖', description: '', style: 'professional', model: 'Claude 4', temperature: 0.3, ontologies: [] })
 
 const filteredAgents = computed(() => {
   if (!searchQuery.value) return agentList
@@ -84,7 +86,7 @@ function formatTime(iso) {
   return d.toLocaleDateString('zh-CN')
 }
 
-function resetForm() { form.name = ''; form.icon = '🤖'; form.description = ''; form.style = 'professional'; form.model = 'Claude 4'; form.temperature = 0.3 }
+function resetForm() { form.name = ''; form.icon = '🤖'; form.description = ''; form.style = 'professional'; form.model = 'Claude 4'; form.temperature = 0.3; form.ontologies = [] }
 
 function showCreateModal() { isEditing.value = false; editingId.value = null; resetForm(); modalOpen.value = true }
 
@@ -92,6 +94,7 @@ function editAgent(agent) {
   isEditing.value = true; editingId.value = agent.id
   form.name = agent.name; form.icon = agent.icon; form.description = agent.description
   form.style = agent.style; form.model = agent.model; form.temperature = agent.temperature
+  form.ontologies = agent.ontologies || []
   modalOpen.value = true
 }
 
@@ -100,13 +103,14 @@ function saveAgent() {
     updateAgent(editingId.value, {
       name: form.name, icon: form.icon, description: form.description,
       style: form.style, model: form.model, temperature: form.temperature,
+      ontologies: form.ontologies,
     })
   } else {
     addAgent({
       id: 'agent-' + Date.now(), name: form.name, icon: form.icon, description: form.description,
       style: form.style, model: form.model, temperature: form.temperature, status: 'online',
-      capabilities: [], knowledgeBases: [], dashTabs: null,
-      pendingCount: 0, lastActive: '刚刚', badge: '', summary: '',
+      capabilities: [], knowledgeBases: [], ontologies: form.ontologies || [],
+      dashTabs: null, pendingCount: 0, lastActive: '刚刚', badge: '', summary: '',
       stats: { totalConversations: 0, todayConversations: 0, lastActiveAt: new Date().toISOString() },
     })
   }

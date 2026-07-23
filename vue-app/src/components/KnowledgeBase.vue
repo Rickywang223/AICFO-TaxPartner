@@ -161,6 +161,41 @@
               </div>
             </div>
           </div>
+          <!-- Relationship Graph -->
+          <div class="onto-graph-section">
+            <div class="editor-section-header">
+              <span>🔗 关系图</span>
+            </div>
+            <svg class="onto-graph-svg" :width="graphWidth" :height="graphHeight" v-if="editingOntology.entities.length > 1">
+              <line
+                v-for="(rel, ri) in graphEdges"
+                :key="'e' + ri"
+                :x1="rel.x1" :y1="rel.y1" :x2="rel.x2" :y2="rel.y2"
+                :stroke="rel.active ? '#1677ff' : '#d9d9d9'"
+                :stroke-width="rel.active ? 2 : 1"
+                :stroke-dasharray="rel.active ? 'none' : '4,4'"
+              />
+              <g v-for="(node, ni) in graphNodes" :key="'n' + ni">
+                <rect
+                  :x="node.x - 50" :y="node.y - 18"
+                  :width="100" :height="36" rx="6"
+                  :fill="node.active ? '#f0f5ff' : '#fff'"
+                  :stroke="node.active ? '#1677ff' : '#d9d9d9'"
+                  :stroke-width="node.active ? 2 : 1"
+                  style="cursor:pointer"
+                  @click="selectEntityById(node.id)"
+                />
+                <text
+                  :x="node.x" :y="node.y + 2"
+                  text-anchor="middle" dominant-baseline="central"
+                  :font-size="node.active ? 13 : 12"
+                  :fill="node.active ? '#1677ff' : '#595959'"
+                  style="pointer-events:none; user-select:none"
+                >{{ node.icon }} {{ node.name }}</text>
+              </g>
+            </svg>
+            <div v-else class="graph-empty-hint">至少需要2个实体才能绘制关系图</div>
+          </div>
         </template>
 
         <!-- List Mode -->
@@ -188,7 +223,7 @@
           <div class="onto-actions" @click.stop>
             <a-button size="small">📝 编辑</a-button>
             <a-button size="small" danger>🗑 删除</a-button>
-            <a-button size="small">📤 导出</a-button>
+            <a-button size="small" @click="exportOntology(onto)">📤 导出</a-button>
           </div>
         </div>
       </div>
@@ -327,6 +362,39 @@ const ontoStats = computed(() => ontologies.map(o => ({
   relationCount: o.entities?.reduce((s, e) => s + (e.relations?.length || 0), 0) || 0,
 })))
 
+const graphWidth = 600
+const graphHeight = 220
+const graphNodes = computed(() => {
+  if (!editingOntology.value) return []
+  const ents = editingOntology.value.entities
+  const cx = graphWidth / 2, cy = graphHeight / 2, r = Math.min(cx, cy) - 40
+  return ents.map((ent, i) => {
+    const angle = (i / ents.length) * Math.PI * 2 - Math.PI / 2
+    return { id: ent.id, name: ent.name, icon: ent.icon, x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle), active: editingEntity.value?.id === ent.id }
+  })
+})
+const graphEdges = computed(() => {
+  if (!editingOntology.value) return []
+  const nodes = graphNodes.value
+  const edges = []
+  const nodeMap = {}
+  nodes.forEach(n => { nodeMap[n.id] = n })
+  editingOntology.value.entities.forEach(ent => {
+    (ent.relations || []).forEach(rel => {
+      const from = nodeMap[ent.id]
+      const to = nodeMap[rel.targetEntity]
+      if (from && to) {
+        edges.push({
+          x1: from.x, y1: from.y, x2: to.x, y2: to.y,
+          active: editingEntity.value?.id === ent.id || editingEntity.value?.id === rel.targetEntity,
+          label: rel.label,
+        })
+      }
+    })
+  })
+  return edges
+})
+
 const dbForm = reactive({
   name: '', type: 'mysql', host: '', port: '3306', database: '', username: '', password: '',
 })
@@ -408,6 +476,22 @@ function viewOntology(onto) {
 }
 
 function selectEntity(ent) { editingEntity.value = ent }
+
+function selectEntityById(id) {
+  if (!editingOntology.value) return
+  const ent = editingOntology.value.entities.find(e => e.id === id)
+  if (ent) editingEntity.value = ent
+}
+
+function exportOntology(onto) {
+  const data = JSON.stringify({ name: onto.name, description: onto.description, entities: onto.entities, version: onto.version, exportedAt: new Date().toISOString() }, null, 2)
+  const blob = new Blob([data], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url; a.download = onto.name + '_本体.json'
+  a.click()
+  URL.revokeObjectURL(url)
+}
 
 function addEntity() {
   if (!editingOntology.value) return
@@ -613,4 +697,7 @@ function deleteRelation(rel) {
 .editor-empty { padding: 20px; text-align: center; font-size: 12px; color: #bfbfbf; }
 .editor-empty-state { display: flex; align-items: center; justify-content: center; gap: 8px; height: 100%; font-size: 14px; color: #bfbfbf; }
 .editor-empty-state .empty-icon { font-size: 24px; }
+.onto-graph-section { border: 1px solid #e8e8e8; border-radius: 6px; background: #fff; overflow: hidden; }
+.onto-graph-svg { display: block; margin: 0 auto; }
+.graph-empty-hint { text-align: center; padding: 40px; color: #bfbfbf; font-size: 13px; }
 </style>
