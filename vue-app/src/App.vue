@@ -33,19 +33,28 @@
           </router-link>
         </div>
 
-        <div class="section-divider"></div>
+        <div class="section-divider">
+          <span class="divider-label">智能体</span>
+        </div>
 
         <!-- 第二部分：智能体列表 -->
         <div class="nav-section agent-section">
-          <div v-for="agent in sortedAgents" :key="agent.id" class="nav-item agent-nav-item"
-            :class="{ 'nav-active': isAgentActive(agent.id) }" @click="switchAgent(agent)">
-            <span class="nav-icon">{{ agent.icon }}</span>
-            <span class="nav-name">{{ agent.name }}</span>
-            <span v-if="agent.pendingCount > 0" class="pending-dot">{{ agent.pendingCount > 99 ? '99+' : agent.pendingCount }}</span>
+          <div v-for="agent in sortedAgents" :key="agent.id" class="agent-entry"
+            :class="{ 'agent-active': isAgentActive(agent.id) }" @click="switchAgent(agent)">
+            <div class="agent-avatar">{{ agent.icon }}</div>
+            <div class="agent-info">
+              <div class="agent-top-row">
+                <span class="agent-name">{{ agent.name }}</span>
+                <span v-if="agent.pendingCount > 0" class="pending-dot">{{ agent.pendingCount > 99 ? '99+' : agent.pendingCount }}</span>
+              </div>
+              <div class="agent-summary">{{ agent.summary }}</div>
+            </div>
           </div>
         </div>
 
-        <div class="section-divider"></div>
+        <div class="section-divider">
+          <span class="divider-label">系统模块</span>
+        </div>
 
         <!-- 第三部分：系统模块 -->
         <div class="nav-section">
@@ -201,12 +210,26 @@ function switchAgent(agent) {
   flex-direction: column;
 }
 
-/* Section divider */
+/* Section divider with label */
 .section-divider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 12px;
+  flex-shrink: 0;
+}
+.section-divider::after {
+  content: '';
+  flex: 1;
   height: 1px;
   background: #f0f0f0;
-  margin: 8px 12px;
-  flex-shrink: 0;
+}
+.divider-label {
+  font-size: 12px;
+  color: #bfbfbf;
+  font-weight: 400;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
 }
 
 /* Navigation sections */
@@ -218,9 +241,108 @@ function switchAgent(agent) {
   flex: 1;
   overflow-y: auto;
   min-height: 0;
+  padding: 0 8px;
 }
 
-/* Unified nav item */
+/* Agent entry — chat-contact style */
+.agent-entry {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.agent-entry:hover {
+  background: #f5f6fa;
+}
+.agent-active {
+  background: #f0f5ff !important;
+}
+.agent-active .agent-name {
+  color: #1677ff;
+}
+
+/* Circular avatar */
+.agent-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #f5f6fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Info area */
+.agent-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+/* Top row */
+.agent-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.agent-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a1a2e;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Pending red dot — unread badge style */
+.pending-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: #f5222d;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* Summary line */
+.agent-summary {
+  font-size: 12px;
+  color: #8c8c8c;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.agent-section::-webkit-scrollbar {
+  width: 4px;
+}
+.agent-section::-webkit-scrollbar-thumb {
+  background: #d9d9d9;
+  border-radius: 2px;
+}
+
+/* ===== 主内容区 ===== */
+
+/* ===== 统一导航项（驾驶舱 + 系统模块） ===== */
 .nav-item {
   display: flex;
   align-items: center;
@@ -233,7 +355,6 @@ function switchAgent(agent) {
   font-size: 13px;
   transition: background 0.15s;
   margin-bottom: 2px;
-  position: relative;
 }
 .nav-item:hover {
   background: #f5f6fa;
@@ -256,36 +377,8 @@ function switchAgent(agent) {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
-/* Cockpit item special styling */
 .cockpit-item {
   background: #fff;
-}
-
-/* Pending red dot */
-.pending-dot {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  border-radius: 9px;
-  background: #f5222d;
-  color: #fff;
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1;
-  flex-shrink: 0;
-}
-
-/* Agent section scroll */
-.agent-section::-webkit-scrollbar {
-  width: 4px;
-}
-.agent-section::-webkit-scrollbar-thumb {
-  background: #d9d9d9;
-  border-radius: 2px;
 }
 
 /* ===== 主内容区 ===== */
