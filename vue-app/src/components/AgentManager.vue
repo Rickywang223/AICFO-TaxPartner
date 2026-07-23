@@ -59,7 +59,7 @@
 <script setup>
 import { ref, computed, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { managedAgents } from '../mockData.js'
+import { agentList, addAgent, removeAgent, updateAgent } from '../store.js'
 
 const router = useRouter()
 const searchQuery = ref('')
@@ -70,9 +70,9 @@ const editingId = ref(null)
 const form = reactive({ name: '', icon: '🤖', description: '', style: 'professional', model: 'Claude 4', temperature: 0.3 })
 
 const filteredAgents = computed(() => {
-  if (!searchQuery.value) return managedAgents
+  if (!searchQuery.value) return agentList
   const q = searchQuery.value.toLowerCase()
-  return managedAgents.filter(a => a.name.toLowerCase().includes(q) || a.description.toLowerCase().includes(q))
+  return agentList.filter(a => a.name.toLowerCase().includes(q) || a.description.toLowerCase().includes(q))
 })
 
 function formatTime(iso) {
@@ -97,22 +97,25 @@ function editAgent(agent) {
 
 function saveAgent() {
   if (isEditing.value && editingId.value) {
-    const a = managedAgents.find(x => x.id === editingId.value)
-    if (a) { a.name = form.name; a.icon = form.icon; a.description = form.description; a.style = form.style; a.model = form.model; a.temperature = form.temperature }
+    updateAgent(editingId.value, {
+      name: form.name, icon: form.icon, description: form.description,
+      style: form.style, model: form.model, temperature: form.temperature,
+    })
   } else {
-    managedAgents.push({
+    addAgent({
       id: 'agent-' + Date.now(), name: form.name, icon: form.icon, description: form.description,
       style: form.style, model: form.model, temperature: form.temperature, status: 'online',
-      capabilities: [], knowledgeBases: [],
+      capabilities: [], knowledgeBases: [], dashTabs: null,
+      pendingCount: 0, lastActive: '刚刚', badge: '', summary: '',
       stats: { totalConversations: 0, todayConversations: 0, lastActiveAt: new Date().toISOString() },
     })
   }
   modalOpen.value = false
 }
 
-function toggleAgent(agent) { agent.status = agent.status === 'paused' ? 'online' : 'paused' }
+function toggleAgent(agent) { updateAgent(agent.id, { status: agent.status === 'paused' ? 'online' : 'paused' }) }
 
-function deleteAgent(agent) { const idx = managedAgents.indexOf(agent); if (idx > -1) managedAgents.splice(idx, 1) }
+function deleteAgent(agent) { removeAgent(agent.id) }
 
 function goChat(agent) { router.push(`/workspace/${agent.id}`) }
 </script>

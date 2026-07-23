@@ -88,7 +88,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getSortedAgents } from './mockData.js'
+import { getSortedAgents } from './store.js'
 import logoUrl from './assets/logo.jpg'
 
 const route = useRoute()

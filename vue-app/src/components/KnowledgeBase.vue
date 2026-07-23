@@ -9,11 +9,17 @@
 
       <!-- File View -->
       <template v-if="activeSrc === 'file'">
-        <div class="upload-zone" @click="simulateUpload">
-          <span class="upload-icon">📂</span>
-          <span class="upload-text">拖拽文件到此处，或点击上传</span>
-          <span class="upload-hint">支持 PDF / Word / Excel / TXT / CSV</span>
-        </div>
+        <div class="upload-zone" :class="{ 'uploading': uploading }" @click="!uploading && simulateUpload()" @dragover.prevent="uploading = true" @dragleave="uploading = false" @drop.prevent="simulateUpload">
+      <template v-if="uploading">
+        <a-progress type="circle" :percent="uploadProgress" :size="60" />
+        <span class="upload-text">正在上传...</span>
+      </template>
+      <template v-else>
+        <span class="upload-icon">📂</span>
+        <span class="upload-text">拖拽文件到此处，或点击上传</span>
+        <span class="upload-hint">支持 PDF / Word / Excel / TXT / CSV</span>
+      </template>
+    </div>
         <div class="search-bar">
           <span class="search-icon">🔍</span>
           <input v-model="fileQuery" type="text" class="search-input" placeholder="搜索文件名..." />
@@ -100,6 +106,8 @@ const categories = knowledgeCategories
 const activeSrc = ref('file')
 const fileQuery = ref('')
 const expandedCat = ref('kb-tax')
+const uploading = ref(false)
+const uploadProgress = ref(0)
 const dbConnections = ref([
   { name: '金蝶ERP生产库', type: 'mysql', host: '192.168.1.100', port: 3306, database: 'kingdee_prod', username: 'reader', status: 'connected', latency: '12ms', boundAgents: ['agent-declare', 'agent-certify'] },
   { name: '税局接口数据库', type: 'postgresql', host: '10.0.0.50', port: 5432, database: 'tax_api', username: 'api_reader', status: 'connected', latency: '8ms', boundAgents: ['agent-risk'] },
@@ -117,7 +125,17 @@ function agentName(id) {
   return map[id] || id
 }
 
-function simulateUpload() { alert('📄 文件上传功能将在对接后端后启用') }
+function simulateUpload() {
+  if (uploading.value) return
+  uploading.value = true; uploadProgress.value = 0
+  const timer = setInterval(() => {
+    uploadProgress.value += Math.random() * 20 + 5
+    if (uploadProgress.value >= 100) {
+      clearInterval(timer); uploadProgress.value = 100
+      setTimeout(() => { uploading.value = false; uploadProgress.value = 0 }, 500)
+    }
+  }, 300)
+}
 
 function showDbModal() { editingDb.value = null; Object.assign(dbForm, { name: '', type: 'mysql', host: '', port: '3306', database: '', username: '', password: '' }); dbTestResult.msg = ''; dbModalOpen.value = true }
 

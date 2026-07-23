@@ -73,7 +73,7 @@
               <!-- Actions -->
               <div class="cap-actions">
                 <a-button size="small" @click="editCapability(cap)">📝 编辑</a-button>
-                <a-button v-if="cap.type === 'connection'" size="small" class="btn-test" @click="testConnection(cap)">🔗 测试连接</a-button>
+                <a-button v-if="cap.type === 'connection'" size="small" class="btn-test" :loading="testingId === cap.id" @click="testConnection(cap)">🔗 测试连接</a-button>
                 <a-button v-if="cap.type === 'channel' && cap.channelConfig?.status !== 'configured'" size="small" class="btn-config" @click="configureChannel(cap)">⚙️ 配置</a-button>
                 <a-button size="small" :type="cap.status === 'enabled' ? 'default' : 'primary'" @click="toggleCapability(cap)">
                   {{ cap.status === 'enabled' ? '⏸ 禁用' : '▶ 启用' }}
@@ -141,7 +141,7 @@
 
 <script setup>
 import { ref, computed, reactive } from 'vue'
-import { Empty as aEmpty } from 'ant-design-vue'
+import { Empty as aEmpty, message } from 'ant-design-vue'
 import { capabilityCategories, capabilities } from '../mockData.js'
 
 const categories = capabilityCategories
@@ -151,6 +151,7 @@ const searchQuery = ref('')
 const modalOpen = ref(false)
 const isEditing = ref(false)
 const editingId = ref(null)
+const testingId = ref(null)
 
 const form = reactive({
   name: '', category: 'mcp', description: '',
@@ -230,12 +231,19 @@ function saveCapability() {
   modalOpen.value = false
 }
 
-function testConnection(cap) {
-  cap.connectionStatus = Math.random() > 0.3 ? 'connected' : 'disconnected'
+async function testConnection(cap) {
+  testingId.value = cap.id
+  message.loading({ content: `正在测试 ${cap.name}...`, key: 'test-' + cap.id, duration: 0 })
+  await new Promise(r => setTimeout(r, 1500))
+  cap.connectionStatus = Math.random() > 0.2 ? 'connected' : 'disconnected'
+  cap.lastActive = '刚刚'
+  message.success({ content: cap.connectionStatus === 'connected' ? `✅ ${cap.name} 连接成功` : `❌ ${cap.name} 连接失败`, key: 'test-' + cap.id, duration: 3 })
+  testingId.value = null
 }
 
 function configureChannel(cap) {
-  cap.channelConfig = { webhook: 'https://open.feishu.cn/...', status: 'configured' }
+  cap.channelConfig = { webhook: 'https://open.feishu.cn/...', secret: '***', status: 'configured' }
+  message.success(`✅ ${cap.name} 配置已保存`)
 }
 
 function toggleCapability(cap) {
