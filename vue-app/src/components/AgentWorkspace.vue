@@ -253,9 +253,9 @@ function handleAction(action) {
 }
 
 .workspace-chat {
-  width: 380px;
+  flex: 0 0 42%;
   min-width: 320px;
-  flex-shrink: 0;
+  max-width: 520px;
   border-right: 1px solid #f0f0f0;
 }
 
@@ -267,7 +267,7 @@ function handleAction(action) {
 
 @media (max-width: 1280px) {
   .workspace-chat {
-    width: 340px;
+    flex: 0 0 42%;
     min-width: 280px;
   }
 }
